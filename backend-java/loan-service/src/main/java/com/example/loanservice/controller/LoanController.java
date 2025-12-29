@@ -32,7 +32,7 @@ public class LoanController {
     }
 
         @GetMapping("/{id}")
-        public Loan get(@PathVariable String id) {
+        public Loan get(@PathVariable(name="id") String id) {
             return loans.get(id); }
 
     @PostMapping
