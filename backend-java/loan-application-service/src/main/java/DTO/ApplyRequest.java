@@ -1,4 +1,4 @@
-package com.example.loanapplication.controller.dto;
+package com.example.loanapplication.DTO;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;

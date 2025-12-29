@@ -1,4 +1,4 @@
-package com.example.loanapplication.domain;
+package com.example.loanapplication.MODELS;
 
 import jakarta.persistence.*;
 import lombok.Data;
