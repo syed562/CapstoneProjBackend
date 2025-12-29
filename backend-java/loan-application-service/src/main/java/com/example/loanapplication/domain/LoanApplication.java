@@ -13,7 +13,7 @@ public class LoanApplication {
     @Column(nullable = false)
     private String userId;
 
-   
+    @Column(nullable = false)
     private Double amount;
 
     @Column(nullable = false)
