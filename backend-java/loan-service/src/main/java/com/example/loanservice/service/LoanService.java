@@ -22,6 +22,13 @@ public class LoanService {
         return repo.findAll();
     }
 
+    public List<Loan> listByUser(String userId) {
+        if (userId == null || userId.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "userId is required");
+        }
+        return repo.findByUserId(userId);
+    }
+
     public Loan get(String id) {
         return repo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Loan not found"));
@@ -43,10 +50,7 @@ public class LoanService {
 
     public Loan updateStatus(String id, String status) {
         Loan loan = repo.findById(id)
-                .orElseThrow(() -> {
-                    System.err.println("Loan not found with ID: " + id);
-                    return new ResponseStatusException(HttpStatus.NOT_FOUND, "Loan not found");
-                });
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Loan not found"));
         loan.setStatus(status);
         loan.setUpdatedAt(Instant.now().toString());
         return repo.save(loan);

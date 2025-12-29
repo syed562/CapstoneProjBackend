@@ -26,9 +26,14 @@ public class LoanController {
     @GetMapping
     public List<Loan> list() { return loans.list(); }
 
-    @GetMapping("/{id}")
-    public Loan get(@PathVariable String id) {
-         return loans.get(id); }
+    @GetMapping("/my")
+    public List<Loan> myLoans(@RequestParam(name = "userId", required = false) String userId) {
+        return loans.listByUser(userId);
+    }
+
+        @GetMapping("/{id}")
+        public Loan get(@PathVariable String id) {
+            return loans.get(id); }
 
     @PostMapping
     public Loan create(@Valid @RequestBody CreateLoanRequest req) {
@@ -36,12 +41,22 @@ public class LoanController {
     }
 
     @PatchMapping("/{id}/status")
-public Loan updateStatus(
-        @PathVariable("id") String id,
-        @Valid @RequestBody UpdateStatusRequest req
-) {
-    return loans.updateStatus(id, req.getStatus());
-}
+    public Loan updateStatus(
+            @PathVariable("id") String id,
+            @Valid @RequestBody UpdateStatusRequest req
+    ) {
+        return loans.updateStatus(id, req.getStatus());
+    }
+
+    @PostMapping("/{applicationId}/approve")
+    public Loan approve(@PathVariable("applicationId") String applicationId) {
+        return loans.updateStatus(applicationId, "approved");
+    }
+
+    @PostMapping("/{applicationId}/reject")
+    public Loan reject(@PathVariable("applicationId") String applicationId) {
+        return loans.updateStatus(applicationId, "rejected");
+    }
 
 
     @DeleteMapping("/{id}")
