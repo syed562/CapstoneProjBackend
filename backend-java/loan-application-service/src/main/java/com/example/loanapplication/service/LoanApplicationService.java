@@ -42,7 +42,7 @@ public class LoanApplicationService {
     }
 
     public LoanApplication markUnderReview(String id) {
-        
+        LoanApplication app = get(id);
         app.setStatus("UNDER_REVIEW");
         app.setUpdatedAt(Instant.now().toString());
         return repo.save(app);
