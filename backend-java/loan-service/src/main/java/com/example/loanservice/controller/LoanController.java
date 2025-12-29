@@ -45,7 +45,7 @@ public Loan updateStatus(
 
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable String id) {
+    public ResponseEntity<Void> delete(@PathVariable("id") String id) {
         loans.delete(id);
         return ResponseEntity.noContent().build();
     }
