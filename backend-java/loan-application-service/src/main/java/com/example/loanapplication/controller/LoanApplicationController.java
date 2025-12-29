@@ -1,7 +1,7 @@
 package com.example.loanapplication.controller;
 
-import com.example.loanapplication.controller.dto.ApplyRequest;
-import com.example.loanapplication.domain.LoanApplication;
+import com.example.loanapplication.DTO.ApplyRequest;
+import com.example.loanapplication.MODELS.LoanApplication;
 import com.example.loanapplication.service.LoanApplicationService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;

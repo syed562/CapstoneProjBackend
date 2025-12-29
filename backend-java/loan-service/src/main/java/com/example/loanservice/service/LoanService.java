@@ -1,5 +1,7 @@
 package com.example.loanservice.service;
 
+import com.example.loanservice.client.LoanApplicationClient;
+import com.example.loanservice.client.dto.LoanApplicationView;
 import com.example.loanservice.domain.Loan;
 import com.example.loanservice.domain.LoanRepository;
 import org.springframework.http.HttpStatus;
@@ -13,9 +15,11 @@ import java.util.UUID;
 @Service
 public class LoanService {
     private final LoanRepository repo;
+    private final LoanApplicationClient loanApplicationClient;
 
-    public LoanService(LoanRepository repo) {
+    public LoanService(LoanRepository repo, LoanApplicationClient loanApplicationClient) {
         this.repo = repo;
+        this.loanApplicationClient = loanApplicationClient;
     }
 
     public List<Loan> list() {
@@ -43,6 +47,24 @@ public class LoanService {
         loan.setTermMonths(termMonths);
         loan.setRatePercent(ratePercent);
         loan.setStatus("pending");
+        loan.setCreatedAt(now);
+        loan.setUpdatedAt(now);
+        return repo.save(loan);
+    }
+
+    public Loan approveFromApplication(String applicationId) {
+        LoanApplicationView app = loanApplicationClient.getApplication(applicationId);
+        if (app == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Application not found");
+        }
+        String now = Instant.now().toString();
+        Loan loan = new Loan();
+        loan.setId(UUID.randomUUID().toString());
+        loan.setUserId(app.getUserId());
+        loan.setAmount(app.getAmount());
+        loan.setTermMonths(app.getTermMonths());
+        loan.setRatePercent(app.getRatePercent());
+        loan.setStatus("approved");
         loan.setCreatedAt(now);
         loan.setUpdatedAt(now);
         return repo.save(loan);

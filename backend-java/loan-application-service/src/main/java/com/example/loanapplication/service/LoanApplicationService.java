@@ -1,7 +1,7 @@
 package com.example.loanapplication.service;
 
-import com.example.loanapplication.domain.LoanApplication;
-import com.example.loanapplication.domain.LoanApplicationRepository;
+import com.example.loanapplication.MODELS.LoanApplication;
+import com.example.loanapplication.repository.LoanApplicationRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
