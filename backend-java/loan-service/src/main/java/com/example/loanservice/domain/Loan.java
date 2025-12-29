@@ -1,23 +1,38 @@
 package com.example.loanservice.domain;
 
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.Data;
 
-
+@Entity
+@Table(name = "loans")
 @Data
 public class Loan {
+    @Id
+    
     private String id;
-    @NotBlank
+
+    @Column(nullable = false)
     private String userId;
-    @NotNull @Min(1)
+
+    @Column(nullable = false)
     private Double amount;
-    @NotNull @Min(1)
+
+    @Column(nullable = false)
     private Integer termMonths;
+
     private Double ratePercent;
-    private String status; // pending | approved | rejected | active | closed
+
+    @Column(nullable = false)
+    private String status;
+
+    @Column(nullable = false)
     private String createdAt;
+
+    @Column(nullable = false)
     private String updatedAt;
 
+   
 }

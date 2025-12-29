@@ -1,6 +1,6 @@
 package com.example.loanservice.controller;
 
-import com.example.loanservice.domain.Loan;
+
 import com.example.loanservice.service.LoanService;
 import com.example.loanservice.controller.dto.CreateLoanRequest;
 import com.example.loanservice.controller.dto.UpdateStatusRequest;
@@ -9,6 +9,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.example.loanservice.domain.Loan;
 
 import java.util.List;
 
@@ -35,12 +36,16 @@ public class LoanController {
     }
 
     @PatchMapping("/{id}/status")
-    public Loan updateStatus(@PathVariable String id, @Valid @RequestBody UpdateStatusRequest req) {
-        return loans.updateStatus(id, req.getStatus());
-    }
+public Loan updateStatus(
+        @PathVariable("id") String id,
+        @Valid @RequestBody UpdateStatusRequest req
+) {
+    return loans.updateStatus(id, req.getStatus());
+}
+
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable String id) {
+    public ResponseEntity<Void> delete(@PathVariable("id") String id) {
         loans.delete(id);
         return ResponseEntity.noContent().build();
     }

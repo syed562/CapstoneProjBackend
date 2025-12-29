@@ -1,26 +1,30 @@
 package com.example.loanservice.service;
 
 import com.example.loanservice.domain.Loan;
+import com.example.loanservice.domain.LoanRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.http.HttpStatus;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
 public class LoanService {
-    private final List<Loan> loans = new ArrayList<>();
+    private final LoanRepository repo;
+
+    public LoanService(LoanRepository repo) {
+        this.repo = repo;
+    }
 
     public List<Loan> list() {
-        return loans;
+        return repo.findAll();
     }
 
     public Loan get(String id) {
-        return findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Loan not found"));
+        return repo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Loan not found"));
     }
 
     public Loan create(String userId, double amount, int termMonths, Double ratePercent) {
@@ -34,23 +38,24 @@ public class LoanService {
         loan.setStatus("pending");
         loan.setCreatedAt(now);
         loan.setUpdatedAt(now);
-        loans.add(loan);
-        return loan;
+        return repo.save(loan);
     }
 
     public Loan updateStatus(String id, String status) {
-        Loan loan = get(id);
+        Loan loan = repo.findById(id)
+                .orElseThrow(() -> {
+                    System.err.println("Loan not found with ID: " + id);
+                    return new ResponseStatusException(HttpStatus.NOT_FOUND, "Loan not found");
+                });
         loan.setStatus(status);
         loan.setUpdatedAt(Instant.now().toString());
-        return loan;
+        return repo.save(loan);
     }
 
     public void delete(String id) {
-        Loan loan = get(id);
-        loans.remove(loan);
-    }
-
-    private Optional<Loan> findById(String id) {
-        return loans.stream().filter(l -> id.equals(l.getId())).findFirst();
+        if (!repo.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Loan not found");
+        }
+        repo.deleteById(id);
     }
 }
