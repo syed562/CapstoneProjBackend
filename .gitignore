@@ -1,0 +1,21 @@
+# Maven
+target/
+
+# Eclipse / STS
+.metadata/
+.project
+.classpath
+.settings/
+
+# SonarLint
+.sonarlint/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+*.env
