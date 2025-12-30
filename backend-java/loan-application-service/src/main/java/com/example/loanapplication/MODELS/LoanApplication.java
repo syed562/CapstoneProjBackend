@@ -22,7 +22,9 @@ public class LoanApplication {
     private Double ratePercent;
 
     @Column(nullable = false)
-    private String status; // SUBMITTED | UNDER_REVIEW | REJECTED | APPROVED
+    private String status; // SUBMITTED | UNDER_REVIEW | REJECTED | APPROVED | CLOSED
+
+    private String remarks;
 
     @Column(nullable = false)
     private String createdAt;
@@ -30,3 +32,4 @@ public class LoanApplication {
     @Column(nullable = false)
     private String updatedAt;
 }
+

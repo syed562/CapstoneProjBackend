@@ -43,8 +43,37 @@ public class LoanApplicationService {
 
     public LoanApplication markUnderReview(String id) {
         LoanApplication app = get(id);
+        if (!"SUBMITTED".equals(app.getStatus())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Application must be in SUBMITTED status to move to UNDER_REVIEW");
+        }
         app.setStatus("UNDER_REVIEW");
         app.setUpdatedAt(Instant.now().toString());
         return repo.save(app);
     }
+
+    public LoanApplication approve(String id) {
+        LoanApplication app = get(id);
+        if (!"UNDER_REVIEW".equals(app.getStatus())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Application must be in UNDER_REVIEW status to approve");
+        }
+        app.setStatus("APPROVED");
+        app.setUpdatedAt(Instant.now().toString());
+        return repo.save(app);
+    }
+
+    public LoanApplication reject(String id, String remarks) {
+        LoanApplication app = get(id);
+        if (!"UNDER_REVIEW".equals(app.getStatus())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Application must be in UNDER_REVIEW status to reject");
+        }
+        app.setStatus("REJECTED");
+        app.setRemarks(remarks != null ? remarks : "Application rejected");
+        app.setUpdatedAt(Instant.now().toString());
+        return repo.save(app);
+    }
+
+    public List<LoanApplication> listAll() {
+        return repo.findAll();
+    }
 }
+

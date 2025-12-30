@@ -62,3 +62,18 @@ public class JwtTokenProvider {
             Jwts.parserBuilder()
                     .setSigningKey(key)
                     .build()
+                    .parseClaimsJws(token);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private Claims getClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
+}

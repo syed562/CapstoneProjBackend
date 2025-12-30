@@ -19,6 +19,7 @@
         <module>loan-service</module>
         <module>loan-application-service</module>
         <module>profile-service</module>
+        <module>report-service</module>
     </modules>
 
     <dependencyManagement>
