@@ -1,9 +1,6 @@
 package com.example.loanservice.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
@@ -22,6 +19,10 @@ public class Loan {
 
     @Column(nullable = false)
     private Integer termMonths;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private LoanType loanType;
 
     private Double ratePercent;
 

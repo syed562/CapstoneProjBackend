@@ -35,7 +35,7 @@ public class LoanController {
 
     @PostMapping
     public Loan create(@Valid @RequestBody CreateLoanRequest req) {
-        return loans.create(req.getUserId(), req.getAmount(), req.getTermMonths(), req.getRatePercent());
+        return loans.create(req.getUserId(), req.getLoanType(), req.getAmount(), req.getTermMonths(), req.getRatePercent());
     }
 
     @PatchMapping("/{id}/status")

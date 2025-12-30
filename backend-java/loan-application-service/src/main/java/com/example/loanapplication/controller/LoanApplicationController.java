@@ -25,7 +25,9 @@ public class LoanApplicationController {
     @PostMapping("/apply")
     @PreAuthorize("hasRole('CUSTOMER') or hasRole('ADMIN')")
     public ResponseEntity<LoanApplication> apply(@Valid @RequestBody ApplyRequest req) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(apps.apply(req.getUserId(), req.getAmount(), req.getTermMonths(), req.getRatePercent()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                apps.apply(req.getUserId(), req.getLoanType(), req.getAmount(), req.getTermMonths(), req.getRatePercent())
+        );
     }
 
     @GetMapping

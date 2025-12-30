@@ -4,6 +4,8 @@ import com.example.loanservice.client.LoanApplicationClient;
 import com.example.loanservice.client.dto.LoanApplicationView;
 import com.example.loanservice.domain.Loan;
 import com.example.loanservice.domain.LoanRepository;
+import com.example.loanservice.domain.LoanType;
+import com.example.loanservice.emi.EMIService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -16,10 +18,12 @@ import java.util.UUID;
 public class LoanService {
     private final LoanRepository repo;
     private final LoanApplicationClient loanApplicationClient;
+    private final EMIService emiService;
 
-    public LoanService(LoanRepository repo, LoanApplicationClient loanApplicationClient) {
+    public LoanService(LoanRepository repo, LoanApplicationClient loanApplicationClient, EMIService emiService) {
         this.repo = repo;
         this.loanApplicationClient = loanApplicationClient;
+        this.emiService = emiService;
     }
 
     public List<Loan> list() {
@@ -38,12 +42,13 @@ public class LoanService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Loan not found"));
     }
 
-    public Loan create(String userId, double amount, int termMonths, Double ratePercent) {
+    public Loan create(String userId, LoanType loanType, double amount, int termMonths, Double ratePercent) {
         String now = Instant.now().toString();
         Loan loan = new Loan();
         loan.setId(UUID.randomUUID().toString());
         loan.setUserId(userId);
         loan.setAmount(amount);
+        loan.setLoanType(loanType);
         loan.setTermMonths(termMonths);
         loan.setRatePercent(ratePercent);
         loan.setStatus("pending");
@@ -62,12 +67,21 @@ public class LoanService {
         loan.setId(UUID.randomUUID().toString());
         loan.setUserId(app.getUserId());
         loan.setAmount(app.getAmount());
+        try {
+            loan.setLoanType(LoanType.valueOf(app.getLoanType().toUpperCase()));
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid loan type on application: " + app.getLoanType());
+        }
         loan.setTermMonths(app.getTermMonths());
         loan.setRatePercent(app.getRatePercent());
         loan.setStatus("approved");
         loan.setCreatedAt(now);
         loan.setUpdatedAt(now);
-        return repo.save(loan);
+        Loan saved = repo.save(loan);
+
+        // Auto-generate EMI schedule after approval
+        emiService.generateEMISchedule(saved.getId());
+        return saved;
     }
 
     public Loan updateStatus(String id, String status) {

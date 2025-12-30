@@ -19,6 +19,10 @@ public class LoanApplication {
     @Column(nullable = false)
     private Integer termMonths;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private LoanType loanType;
+
     private Double ratePercent;
 
     @Column(nullable = false)

@@ -5,6 +5,7 @@ public class LoanApplicationView {
     private String userId;
     private Double amount;
     private Integer termMonths;
+    private String loanType;
     private Double ratePercent;
     private String status;
 
@@ -19,6 +20,9 @@ public class LoanApplicationView {
 
     public Integer getTermMonths() { return termMonths; }
     public void setTermMonths(Integer termMonths) { this.termMonths = termMonths; }
+
+    public String getLoanType() { return loanType; }
+    public void setLoanType(String loanType) { this.loanType = loanType; }
 
     public Double getRatePercent() { return ratePercent; }
     public void setRatePercent(Double ratePercent) { this.ratePercent = ratePercent; }
