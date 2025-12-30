@@ -21,10 +21,10 @@ public class User {
     private String password;
 
     @Column(nullable = false)
-    private String role; // ADMIN, LOAN_OFFICER, CUSTOMER
+    private String role;
 
     @Column(nullable = false)
-    private String status; // ACTIVE, INACTIVE, LOCKED
+    private String status; 
 
     @Column(nullable = false)
     private String createdAt;
