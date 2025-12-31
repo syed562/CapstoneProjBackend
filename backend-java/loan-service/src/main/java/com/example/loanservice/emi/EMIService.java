@@ -8,9 +8,10 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.IntStream;
 
 @Service
 public class EMIService {
@@ -40,31 +41,31 @@ public class EMIService {
         }
 
         double emiAmount = EMICalculator.calculateEMI(loan.getAmount(), loan.getRatePercent(), loan.getTermMonths());
-        List<EMISchedule> schedules = new ArrayList<>();
-
         YearMonth currentMonth = YearMonth.now();
-        double outstandingBalance = loan.getAmount();
+        AtomicReference<Double> balance = new AtomicReference<>(loan.getAmount());
 
-        for (int month = 1; month <= loan.getTermMonths(); month++) {
-            double monthlyRate = loan.getRatePercent() / 12 / 100;
-            double interestAmount = outstandingBalance * monthlyRate;
-            double principalAmount = emiAmount - interestAmount;
-            outstandingBalance -= principalAmount;
+        List<EMISchedule> schedules = IntStream.rangeClosed(1, loan.getTermMonths())
+                .mapToObj(month -> {
+                    double monthlyRate = loan.getRatePercent() / 12 / 100;
+                    double interestAmount = balance.get() * monthlyRate;
+                    double principalAmount = emiAmount - interestAmount;
+                    balance.set(balance.get() - principalAmount);
 
-            EMISchedule schedule = new EMISchedule();
-            schedule.setId(UUID.randomUUID().toString());
-            schedule.setLoanId(loanId);
-            schedule.setMonth(month);
-            schedule.setEmiAmount(Math.round(emiAmount * 100.0) / 100.0);
-            schedule.setPrincipalAmount(Math.round(principalAmount * 100.0) / 100.0);
-            schedule.setInterestAmount(Math.round(interestAmount * 100.0) / 100.0);
-            schedule.setOutstandingBalance(Math.round(Math.max(0, outstandingBalance) * 100.0) / 100.0);
-            schedule.setStatus("SCHEDULED");
-            schedule.setDueDate(currentMonth.plusMonths(month).atEndOfMonth().toString());
-            schedule.setCreatedAt(java.time.Instant.now().toString());
+                    EMISchedule schedule = new EMISchedule();
+                    schedule.setId(UUID.randomUUID().toString());
+                    schedule.setLoanId(loanId);
+                    schedule.setMonth(month);
+                    schedule.setEmiAmount(Math.round(emiAmount * 100.0) / 100.0);
+                    schedule.setPrincipalAmount(Math.round(principalAmount * 100.0) / 100.0);
+                    schedule.setInterestAmount(Math.round(interestAmount * 100.0) / 100.0);
+                    schedule.setOutstandingBalance(Math.round(Math.max(0, balance.get()) * 100.0) / 100.0);
+                    schedule.setStatus("SCHEDULED");
+                    schedule.setDueDate(currentMonth.plusMonths(month).atEndOfMonth().toString());
+                    schedule.setCreatedAt(java.time.Instant.now().toString());
 
-            schedules.add(schedule);
-        }
+                    return schedule;
+                })
+                .toList();
 
         return emiRepository.saveAll(schedules);
     }
