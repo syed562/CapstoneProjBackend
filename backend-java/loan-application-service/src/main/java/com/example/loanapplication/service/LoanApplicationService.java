@@ -2,7 +2,10 @@ package com.example.loanapplication.service;
 
 import com.example.loanapplication.MODELS.LoanApplication;
 import com.example.loanapplication.MODELS.LoanType;
+import com.example.loanapplication.client.ProfileServiceClient;
+import com.example.loanapplication.client.dto.ProfileView;
 import com.example.loanapplication.repository.LoanApplicationRepository;
+import feign.FeignException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -21,6 +24,7 @@ public class LoanApplicationService {
     private final LoanApplicationRepository repo;
     private final ApprovalCriteriaService approvalCriteriaService;
     private final NotificationService notificationService;
+    private final ProfileServiceClient profileServiceClient;
     private final double minAmount;
     private final double maxAmount;
     private final Set<Integer> allowedTenures;
@@ -30,6 +34,7 @@ public class LoanApplicationService {
             LoanApplicationRepository repo,
             ApprovalCriteriaService approvalCriteriaService,
             NotificationService notificationService,
+            ProfileServiceClient profileServiceClient,
             @Value("${loan.rules.amount.min:5000}") double minAmount,
             @Value("${loan.rules.amount.max:2000000}") double maxAmount,
             @Value("${loan.rules.tenures:12,24,36}") String tenureOptions
@@ -37,6 +42,7 @@ public class LoanApplicationService {
         this.repo = repo;
         this.approvalCriteriaService = approvalCriteriaService;
         this.notificationService = notificationService;
+        this.profileServiceClient = profileServiceClient;
         this.minAmount = minAmount;
         this.maxAmount = maxAmount;
         this.allowedTenures = parseIntSet(tenureOptions);
@@ -44,6 +50,8 @@ public class LoanApplicationService {
     }
 
     public LoanApplication apply(String userId, LoanType loanType, double amount, int termMonths, Double ratePercent) {
+        // TODO: Re-enable profile existence check once Feign integration is stable
+        // ensureProfileExists(userId);
         if (amount < minAmount || amount > maxAmount) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Amount must be between " + minAmount + " and " + maxAmount);
         }
@@ -155,6 +163,28 @@ public class LoanApplicationService {
                 .filter(s -> !s.isEmpty())
                 .map(Integer::parseInt)
                 .collect(Collectors.toCollection(HashSet::new));
+    }
+
+    private void ensureProfileExists(String userId) {
+        try {
+            System.out.println("[LOAN-APP] Checking profile for userId: " + userId);
+            ProfileView profile = profileServiceClient.getProfile(userId);
+            System.out.println("[LOAN-APP] Profile found: " + profile);
+            if (profile == null) {
+                System.out.println("[LOAN-APP] WARNING: Profile is null for userId: " + userId + ", allowing application anyway");
+                return;
+            }
+        } catch (FeignException.NotFound e) {
+            System.out.println("[LOAN-APP] Profile not found (404): " + userId + ", error: " + e.getMessage() + ", allowing application anyway");
+            return;
+        } catch (FeignException e) {
+            System.out.println("[LOAN-APP] Feign error calling profile-service: " + e.getClass().getName() + ", status: " + e.status() + ", message: " + e.getMessage() + ", allowing application anyway");
+            return;
+        } catch (Exception e) {
+            System.out.println("[LOAN-APP] Unexpected error: " + e.getClass().getName() + ", message: " + e.getMessage() + ", allowing application anyway");
+            e.printStackTrace();
+            return;
+        }
     }
 
 }

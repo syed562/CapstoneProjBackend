@@ -8,7 +8,10 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -25,8 +28,14 @@ public class LoanApplicationController {
     @PostMapping("/apply")
     @PreAuthorize("hasRole('CUSTOMER') or hasRole('ADMIN')")
     public ResponseEntity<LoanApplication> apply(@Valid @RequestBody ApplyRequest req) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || auth.getPrincipal() == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing authentication context");
+        }
+        String userId = auth.getPrincipal().toString();
+        System.out.println("[LOAN-APP-CONTROLLER] Extracted userId from JWT: " + userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(
-                apps.apply(req.getUserId(), req.getLoanType(), req.getAmount(), req.getTermMonths(), req.getRatePercent())
+                apps.apply(userId, req.getLoanType(), req.getAmount(), req.getTermMonths(), req.getRatePercent())
         );
     }
 

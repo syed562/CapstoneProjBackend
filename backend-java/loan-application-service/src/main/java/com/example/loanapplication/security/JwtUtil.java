@@ -39,7 +39,12 @@ public class JwtUtil {
      * Extract userId from token
      */
     public String extractUserId(String token) {
-        return extractClaims(token).get("userId", String.class);
+        Claims claims = extractClaims(token);
+        String userId = claims.get("userId", String.class);
+        if (userId != null) {
+            return userId;
+        }
+        return claims.getSubject();
     }
 
     /**
