@@ -13,10 +13,12 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,6 +31,7 @@ public class LoanApplicationService {
     private final double maxAmount;
     private final Set<Integer> allowedTenures;
     private final Set<LoanType> allowedTypes;
+    private final Map<LoanType, Double> defaultRates;
 
     public LoanApplicationService(
             LoanApplicationRepository repo,
@@ -37,7 +40,8 @@ public class LoanApplicationService {
             ProfileServiceClient profileServiceClient,
             @Value("${loan.rules.amount.min:5000}") double minAmount,
             @Value("${loan.rules.amount.max:2000000}") double maxAmount,
-            @Value("${loan.rules.tenures:12,24,36}") String tenureOptions
+            @Value("${loan.rules.tenures:12,24,36}") String tenureOptions,
+            @Value("${loan.rules.rates:PERSONAL=12,HOME=8.5,AUTO=10}") String rateOptions
     ) {
         this.repo = repo;
         this.approvalCriteriaService = approvalCriteriaService;
@@ -47,6 +51,7 @@ public class LoanApplicationService {
         this.maxAmount = maxAmount;
         this.allowedTenures = parseIntSet(tenureOptions);
         this.allowedTypes = Set.of(LoanType.values());
+        this.defaultRates = parseRateMap(rateOptions);
     }
 
     public LoanApplication apply(String userId, LoanType loanType, double amount, int termMonths, Double ratePercent) {
@@ -65,6 +70,8 @@ public class LoanApplicationService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "An active application for this loan type already exists");
         }
 
+        double resolvedRate = ratePercent != null ? ratePercent : resolveRateForType(loanType);
+
         String now = Instant.now().toString();
         LoanApplication app = new LoanApplication();
         app.setId(UUID.randomUUID().toString());
@@ -72,7 +79,7 @@ public class LoanApplicationService {
         app.setLoanType(loanType);
         app.setAmount(String.valueOf(amount));
         app.setTermMonths(termMonths);
-        app.setRatePercent(ratePercent != null ? String.valueOf(ratePercent) : null);
+        app.setRatePercent(String.valueOf(resolvedRate));
         app.setStatus("SUBMITTED");
         app.setCreatedAt(now);
         app.setUpdatedAt(now);
@@ -166,6 +173,33 @@ public class LoanApplicationService {
                 .filter(s -> !s.isEmpty())
                 .map(Integer::parseInt)
                 .collect(Collectors.toCollection(HashSet::new));
+    }
+
+    private Map<LoanType, Double> parseRateMap(String csv) {
+        Map<LoanType, Double> map = new HashMap<>();
+        if (csv == null || csv.isBlank()) return map;
+        String[] pairs = csv.split(",");
+        for (String pair : pairs) {
+            if (pair.isBlank() || !pair.contains("=")) continue;
+            String[] kv = pair.split("=");
+            if (kv.length != 2) continue;
+            try {
+                LoanType type = LoanType.valueOf(kv[0].trim().toUpperCase());
+                Double rate = Double.parseDouble(kv[1].trim());
+                map.put(type, rate);
+            } catch (Exception ignored) {
+                // Skip invalid entry
+            }
+        }
+        return map;
+    }
+
+    private double resolveRateForType(LoanType loanType) {
+        Double rate = defaultRates.get(loanType);
+        if (rate == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No default rate configured for loan type " + loanType);
+        }
+        return rate;
     }
 
     private void ensureProfileExists(String userId) {

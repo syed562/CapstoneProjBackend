@@ -6,13 +6,16 @@ import com.example.loanservice.domain.Loan;
 import com.example.loanservice.domain.LoanRepository;
 import com.example.loanservice.domain.LoanType;
 import com.example.loanservice.emi.EMIService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.HashMap;
 
 @Service
 public class LoanService {
@@ -20,13 +23,16 @@ public class LoanService {
     private final LoanApplicationClient loanApplicationClient;
     private final EMIService emiService;
     private final LoanNotificationService notificationService;
+    private final Map<LoanType, Double> defaultRates;
 
-    public LoanService(LoanRepository repo, LoanApplicationClient loanApplicationClient, 
-                     EMIService emiService, LoanNotificationService notificationService) {
+    public LoanService(LoanRepository repo, LoanApplicationClient loanApplicationClient,
+                     EMIService emiService, LoanNotificationService notificationService,
+                     @Value("${loan.rules.rates:PERSONAL=12,HOME=8.5,AUTO=10}") String rateOptions) {
         this.repo = repo;
         this.loanApplicationClient = loanApplicationClient;
         this.emiService = emiService;
         this.notificationService = notificationService;
+        this.defaultRates = parseRateMap(rateOptions);
     }
 
     public List<Loan> list() {
@@ -47,13 +53,14 @@ public class LoanService {
 
     public Loan create(String userId, LoanType loanType, double amount, int termMonths, Double ratePercent) {
         String now = Instant.now().toString();
+        double resolvedRate = ratePercent != null ? ratePercent : resolveRateForType(loanType);
         Loan loan = new Loan();
         loan.setId(UUID.randomUUID().toString());
         loan.setUserId(userId);
         loan.setAmount(amount);
         loan.setLoanType(loanType);
         loan.setTermMonths(termMonths);
-        loan.setRatePercent(ratePercent);
+        loan.setRatePercent(resolvedRate);
         loan.setStatus("pending");
         loan.setOutstandingBalance(amount);  // Initialize with full loan amount
         loan.setCreatedAt(now);
@@ -77,7 +84,8 @@ public class LoanService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid loan type on application: " + app.getLoanType());
         }
         loan.setTermMonths(app.getTermMonths());
-        loan.setRatePercent(app.getRatePercent());
+        Double resolvedRate = app.getRatePercent() != null ? app.getRatePercent() : resolveRateForType(loan.getLoanType());
+        loan.setRatePercent(resolvedRate);
         loan.setStatus("approved");
         loan.setOutstandingBalance(app.getAmount());  // Initialize with full amount
         loan.setCreatedAt(now);
@@ -88,10 +96,8 @@ public class LoanService {
         emiService.generateEMISchedule(saved.getId());
         
         // Send EMI notification to customer
-        if (app.getRatePercent() != null) {
-            notificationService.sendEMINotification(app.getUserId(), saved.getId(), 
-                app.getAmount(), app.getRatePercent(), app.getTermMonths());
-        }
+        notificationService.sendEMINotification(app.getUserId(), saved.getId(),
+            app.getAmount(), resolvedRate, app.getTermMonths());
         
         return saved;
     }
@@ -109,5 +115,32 @@ public class LoanService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Loan not found");
         }
         repo.deleteById(id);
+    }
+
+    private Map<LoanType, Double> parseRateMap(String csv) {
+        Map<LoanType, Double> map = new HashMap<>();
+        if (csv == null || csv.isBlank()) return map;
+        String[] pairs = csv.split(",");
+        for (String pair : pairs) {
+            if (pair.isBlank() || !pair.contains("=")) continue;
+            String[] kv = pair.split("=");
+            if (kv.length != 2) continue;
+            try {
+                LoanType type = LoanType.valueOf(kv[0].trim().toUpperCase());
+                Double rate = Double.parseDouble(kv[1].trim());
+                map.put(type, rate);
+            } catch (Exception ignored) {
+                // Skip invalid entry
+            }
+        }
+        return map;
+    }
+
+    private double resolveRateForType(LoanType loanType) {
+        Double rate = defaultRates.get(loanType);
+        if (rate == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No default rate configured for loan type " + loanType);
+        }
+        return rate;
     }
 }
