@@ -2,6 +2,7 @@ package com.example.loanapplication.MODELS;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import com.example.loanapplication.security.EncryptedStringConverter;
 
 @Entity
 @Table(name = "loan_applications")
@@ -14,7 +15,8 @@ public class LoanApplication {
     private String userId;
 
     @Column(nullable = false)
-    private Double amount;
+    @Convert(converter = EncryptedStringConverter.class)
+    private String amount;  // Encrypted: loan amount
 
     @Column(nullable = false)
     private Integer termMonths;
@@ -23,7 +25,8 @@ public class LoanApplication {
     @Column(nullable = false)
     private LoanType loanType;
 
-    private Double ratePercent;
+    @Convert(converter = EncryptedStringConverter.class)
+    private String ratePercent;  // Encrypted: interest rate
 
     @Column(nullable = false)
     private String status; // SUBMITTED | UNDER_REVIEW | REJECTED | APPROVED | CLOSED
