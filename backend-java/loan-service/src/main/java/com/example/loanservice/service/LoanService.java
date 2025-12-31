@@ -11,6 +11,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +34,9 @@ public class LoanService {
     private final EMIService emiService;
     private final LoanNotificationService notificationService;
     private final Map<LoanType, Double> defaultRates;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public LoanService(LoanRepository repo, LoanApplicationClient loanApplicationClient,
                      EMIService emiService, LoanNotificationService notificationService,
@@ -39,11 +52,46 @@ public class LoanService {
         return repo.findAll();
     }
 
+    public Page<Loan> listPaged(int page, int size, Sort sort) {
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return repo.findAll(pageable);
+    }
+
     public List<Loan> listByUser(String userId) {
         if (userId == null || userId.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "userId is required");
         }
         return repo.findByUserId(userId);
+    }
+
+    public List<Loan> findByStatusAndAmount(String status, Double minAmount, Double maxAmount) {
+        return repo.findByStatusAndAmountRange(status, minAmount, maxAmount);
+    }
+
+    public List<Loan> searchCriteria(String userId, String status, Double minAmount, Double maxAmount) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Loan> query = cb.createQuery(Loan.class);
+        Root<Loan> root = query.from(Loan.class);
+
+        Predicate predicate = cb.conjunction();
+        if (userId != null && !userId.isBlank()) {
+            predicate = cb.and(predicate, cb.equal(root.get("userId"), userId));
+        }
+        if (status != null && !status.isBlank()) {
+            predicate = cb.and(predicate, cb.equal(cb.lower(root.get("status")), status.toLowerCase()));
+        }
+        if (minAmount != null) {
+            predicate = cb.and(predicate, cb.ge(root.get("amount"), minAmount));
+        }
+        if (maxAmount != null) {
+            predicate = cb.and(predicate, cb.le(root.get("amount"), maxAmount));
+        }
+
+        query.select(root)
+             .where(predicate)
+             .orderBy(cb.desc(root.get("createdAt")));
+
+        return entityManager.createQuery(query).getResultList();
     }
 
     public Loan get(String id) {
