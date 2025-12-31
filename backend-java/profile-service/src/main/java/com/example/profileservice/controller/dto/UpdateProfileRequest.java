@@ -21,5 +21,10 @@ public class UpdateProfileRequest {
     private String postalCode;
     private String country;
 
+    // Optional financial attributes used by loan-approval criteria
+    private Double creditScore;
+    private Double annualIncome;
+    private Double totalLiabilities;
+
   
 }

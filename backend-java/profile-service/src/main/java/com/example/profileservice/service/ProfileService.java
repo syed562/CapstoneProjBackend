@@ -45,6 +45,15 @@ public class ProfileService {
         profile.setState(req.getState());
         profile.setPostalCode(req.getPostalCode());
         profile.setCountry(req.getCountry());
+        if (req.getCreditScore() != null) {
+            profile.setCreditScore(req.getCreditScore());
+        }
+        if (req.getAnnualIncome() != null) {
+            profile.setAnnualIncome(req.getAnnualIncome());
+        }
+        if (req.getTotalLiabilities() != null) {
+            profile.setTotalLiabilities(req.getTotalLiabilities());
+        }
         if (profile.getKycStatus() == null || profile.getKycStatus().isBlank()) {
             profile.setKycStatus("PENDING");
         }
