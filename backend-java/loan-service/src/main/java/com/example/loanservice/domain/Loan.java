@@ -8,7 +8,7 @@ import lombok.Data;
 @Data
 public class Loan {
     @Id
-    
+    @Column(name = "id")
     private String id;
 
     @Column(nullable = false)

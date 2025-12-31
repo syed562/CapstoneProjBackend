@@ -2,6 +2,7 @@ package com.example.loanapplication.service;
 
 import com.example.loanapplication.MODELS.LoanApplication;
 import com.example.loanapplication.MODELS.LoanType;
+import com.example.loanapplication.client.LoanServiceClient;
 import com.example.loanapplication.client.ProfileServiceClient;
 import com.example.loanapplication.client.dto.ProfileView;
 import com.example.loanapplication.repository.LoanApplicationRepository;
@@ -27,6 +28,7 @@ public class LoanApplicationService {
     private final ApprovalCriteriaService approvalCriteriaService;
     private final NotificationService notificationService;
     private final ProfileServiceClient profileServiceClient;
+    private final LoanServiceClient loanServiceClient;
     private final double minAmount;
     private final double maxAmount;
     private final Set<Integer> allowedTenures;
@@ -38,6 +40,7 @@ public class LoanApplicationService {
             ApprovalCriteriaService approvalCriteriaService,
             NotificationService notificationService,
             ProfileServiceClient profileServiceClient,
+            LoanServiceClient loanServiceClient,
             @Value("${loan.rules.amount.min:5000}") double minAmount,
             @Value("${loan.rules.amount.max:2000000}") double maxAmount,
             @Value("${loan.rules.tenures:12,24,36}") String tenureOptions,
@@ -47,6 +50,7 @@ public class LoanApplicationService {
         this.approvalCriteriaService = approvalCriteriaService;
         this.notificationService = notificationService;
         this.profileServiceClient = profileServiceClient;
+        this.loanServiceClient = loanServiceClient;
         this.minAmount = minAmount;
         this.maxAmount = maxAmount;
         this.allowedTenures = parseIntSet(tenureOptions);
@@ -139,6 +143,15 @@ public class LoanApplicationService {
             notifyRate,
             app.getLoanType().toString()
         );
+        
+        // Automatically create loan in loan-service
+        try {
+            loanServiceClient.createLoanFromApplication(saved.getId());
+            System.out.println("[LOAN-APP] Loan created in loan-service for application: " + saved.getId());
+        } catch (Exception e) {
+            System.err.println("[LOAN-APP] Failed to create loan in loan-service: " + e.getMessage());
+            // Don't fail the approval if loan creation fails - can be retried manually
+        }
         
         return saved;
     }
