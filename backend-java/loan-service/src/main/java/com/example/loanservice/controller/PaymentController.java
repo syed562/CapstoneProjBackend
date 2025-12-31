@@ -5,7 +5,6 @@ import com.example.loanservice.service.PaymentService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,7 +23,6 @@ public class PaymentController {
      * Record a payment for an EMI
      */
     @PostMapping("/record")
-    @PreAuthorize("hasRole('CUSTOMER') or hasRole('ADMIN')")
     public ResponseEntity<Payment> recordPayment(@Valid @RequestBody RecordPaymentRequest req) {
         Payment payment = paymentService.recordPayment(
                 req.getLoanId(),
@@ -40,7 +38,6 @@ public class PaymentController {
      * Get all payments for a loan
      */
     @GetMapping("/loan/{loanId}")
-    @PreAuthorize("hasRole('CUSTOMER') or hasRole('LOAN_OFFICER') or hasRole('ADMIN')")
     public ResponseEntity<List<Payment>> getPaymentsByLoan(@PathVariable String loanId) {
         return ResponseEntity.ok(paymentService.getPaymentsByLoan(loanId));
     }
@@ -49,7 +46,6 @@ public class PaymentController {
      * Get payment for specific EMI
      */
     @GetMapping("/emi/{emiId}")
-    @PreAuthorize("hasRole('CUSTOMER') or hasRole('LOAN_OFFICER') or hasRole('ADMIN')")
     public ResponseEntity<List<Payment>> getPaymentsByEmi(@PathVariable String emiId) {
         return ResponseEntity.ok(paymentService.getPaymentsByEmi(emiId));
     }
@@ -58,7 +54,6 @@ public class PaymentController {
      * Get payment by ID
      */
     @GetMapping("/{paymentId}")
-    @PreAuthorize("hasRole('CUSTOMER') or hasRole('LOAN_OFFICER') or hasRole('ADMIN')")
     public ResponseEntity<Payment> getPayment(@PathVariable String paymentId) {
         return ResponseEntity.ok(paymentService.getPayment(paymentId));
     }

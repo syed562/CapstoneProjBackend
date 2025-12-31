@@ -2,10 +2,10 @@ package com.example.loanservice.service;
 
 import com.example.loanservice.domain.Loan;
 import com.example.loanservice.domain.Payment;
+import com.example.loanservice.domain.LoanRepository;
 import com.example.loanservice.emi.EMISchedule;
-import com.example.loanservice.repository.LoanRepository;
+import com.example.loanservice.emi.EMIScheduleRepository;
 import com.example.loanservice.repository.PaymentRepository;
-import com.example.loanservice.emi.EMIRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -18,9 +18,9 @@ import java.util.UUID;
 public class PaymentService {
     private final PaymentRepository paymentRepo;
     private final LoanRepository loanRepo;
-    private final EMIRepository emiRepo;
+    private final EMIScheduleRepository emiRepo;
 
-    public PaymentService(PaymentRepository paymentRepo, LoanRepository loanRepo, EMIRepository emiRepo) {
+    public PaymentService(PaymentRepository paymentRepo, LoanRepository loanRepo, EMIScheduleRepository emiRepo) {
         this.paymentRepo = paymentRepo;
         this.loanRepo = loanRepo;
         this.emiRepo = emiRepo;
