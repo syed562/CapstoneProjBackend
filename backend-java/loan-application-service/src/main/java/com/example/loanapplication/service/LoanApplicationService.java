@@ -70,9 +70,9 @@ public class LoanApplicationService {
         app.setId(UUID.randomUUID().toString());
         app.setUserId(userId);
         app.setLoanType(loanType);
-        app.setAmount(amount);
+        app.setAmount(String.valueOf(amount));
         app.setTermMonths(termMonths);
-        app.setRatePercent(ratePercent);
+        app.setRatePercent(ratePercent != null ? String.valueOf(ratePercent) : null);
         app.setStatus("SUBMITTED");
         app.setCreatedAt(now);
         app.setUpdatedAt(now);
@@ -105,9 +105,10 @@ public class LoanApplicationService {
         }
         
         // Validate approval criteria (credit score, income, liabilities)
+        double decryptedAmount = Double.parseDouble(app.getAmount());
         ApprovalCriteriaService.ApprovalDecision decision = approvalCriteriaService.validateApprovalCriteria(
             app.getUserId(), 
-            app.getAmount()
+            decryptedAmount
         );
         
         if (!decision.isApproved()) {
@@ -121,12 +122,14 @@ public class LoanApplicationService {
         LoanApplication saved = repo.save(app);
         
         // Send approval notification
+        double notifyAmount = Double.parseDouble(app.getAmount());
+        double notifyRate = app.getRatePercent() != null ? Double.parseDouble(app.getRatePercent()) : 0.0;
         notificationService.sendApprovalNotification(
             app.getUserId(),
             app.getId(),
-            app.getAmount(),
+            notifyAmount,
             app.getTermMonths(),
-            app.getRatePercent() != null ? app.getRatePercent() : 0.0,
+            notifyRate,
             app.getLoanType().toString()
         );
         

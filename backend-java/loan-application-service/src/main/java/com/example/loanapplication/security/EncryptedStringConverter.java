@@ -31,12 +31,18 @@ public class EncryptedStringConverter implements AttributeConverter<String, Stri
 
     /**
      * Decrypt when reading from database
+     * If decryption fails (e.g., data was not encrypted), return as-is
      */
     @Override
     public String convertToEntityAttribute(String dbData) {
         if (encryptionUtil == null || dbData == null || dbData.isEmpty()) {
             return dbData;
         }
-        return encryptionUtil.decrypt(dbData);
+        try {
+            return encryptionUtil.decrypt(dbData);
+        } catch (Exception e) {
+            // Data might not be encrypted (legacy data), return as-is
+            return dbData;
+        }
     }
 }

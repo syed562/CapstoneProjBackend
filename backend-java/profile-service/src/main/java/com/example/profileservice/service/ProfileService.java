@@ -46,13 +46,13 @@ public class ProfileService {
         profile.setPostalCode(req.getPostalCode());
         profile.setCountry(req.getCountry());
         if (req.getCreditScore() != null) {
-            profile.setCreditScore(req.getCreditScore());
+            profile.setCreditScore(String.valueOf(req.getCreditScore()));
         }
         if (req.getAnnualIncome() != null) {
-            profile.setAnnualIncome(req.getAnnualIncome());
+            profile.setAnnualIncome(String.valueOf(req.getAnnualIncome()));
         }
         if (req.getTotalLiabilities() != null) {
-            profile.setTotalLiabilities(req.getTotalLiabilities());
+            profile.setTotalLiabilities(String.valueOf(req.getTotalLiabilities()));
         }
         if (profile.getKycStatus() == null || profile.getKycStatus().isBlank()) {
             profile.setKycStatus("PENDING");
