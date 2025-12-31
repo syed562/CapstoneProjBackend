@@ -22,6 +22,9 @@ public class Profile {
     private String postalCode;
     private String country;
     private String kycStatus;
+    private Double creditScore;     // Credit score (0-900)
+    private Double annualIncome;    // Annual income for eligibility
+    private Double totalLiabilities; // Total outstanding liabilities
     private String createdAt;
     private String updatedAt;
 
