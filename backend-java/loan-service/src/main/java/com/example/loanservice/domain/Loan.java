@@ -29,6 +29,8 @@ public class Loan {
     @Column(nullable = false)
     private String status;
 
+    private Double outstandingBalance;  // Remaining principal after payments
+
     @Column(nullable = false)
     private String createdAt;
 

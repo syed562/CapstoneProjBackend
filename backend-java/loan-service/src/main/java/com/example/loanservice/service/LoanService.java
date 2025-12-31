@@ -55,6 +55,7 @@ public class LoanService {
         loan.setTermMonths(termMonths);
         loan.setRatePercent(ratePercent);
         loan.setStatus("pending");
+        loan.setOutstandingBalance(amount);  // Initialize with full loan amount
         loan.setCreatedAt(now);
         loan.setUpdatedAt(now);
         return repo.save(loan);
@@ -78,6 +79,7 @@ public class LoanService {
         loan.setTermMonths(app.getTermMonths());
         loan.setRatePercent(app.getRatePercent());
         loan.setStatus("approved");
+        loan.setOutstandingBalance(app.getAmount());  // Initialize with full amount
         loan.setCreatedAt(now);
         loan.setUpdatedAt(now);
         Loan saved = repo.save(loan);

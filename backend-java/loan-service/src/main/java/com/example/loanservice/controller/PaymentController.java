@@ -1,0 +1,65 @@
+package com.example.loanservice.controller;
+
+import com.example.loanservice.domain.Payment;
+import com.example.loanservice.service.PaymentService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/payments")
+@CrossOrigin
+public class PaymentController {
+    private final PaymentService paymentService;
+
+    public PaymentController(PaymentService paymentService) {
+        this.paymentService = paymentService;
+    }
+
+    /**
+     * Record a payment for an EMI
+     */
+    @PostMapping("/record")
+    @PreAuthorize("hasRole('CUSTOMER') or hasRole('ADMIN')")
+    public ResponseEntity<Payment> recordPayment(@Valid @RequestBody RecordPaymentRequest req) {
+        Payment payment = paymentService.recordPayment(
+                req.getLoanId(),
+                req.getEmiId(),
+                req.getAmount(),
+                req.getPaymentMethod(),
+                req.getTransactionId()
+        );
+        return ResponseEntity.status(HttpStatus.CREATED).body(payment);
+    }
+
+    /**
+     * Get all payments for a loan
+     */
+    @GetMapping("/loan/{loanId}")
+    @PreAuthorize("hasRole('CUSTOMER') or hasRole('LOAN_OFFICER') or hasRole('ADMIN')")
+    public ResponseEntity<List<Payment>> getPaymentsByLoan(@PathVariable String loanId) {
+        return ResponseEntity.ok(paymentService.getPaymentsByLoan(loanId));
+    }
+
+    /**
+     * Get payment for specific EMI
+     */
+    @GetMapping("/emi/{emiId}")
+    @PreAuthorize("hasRole('CUSTOMER') or hasRole('LOAN_OFFICER') or hasRole('ADMIN')")
+    public ResponseEntity<List<Payment>> getPaymentsByEmi(@PathVariable String emiId) {
+        return ResponseEntity.ok(paymentService.getPaymentsByEmi(emiId));
+    }
+
+    /**
+     * Get payment by ID
+     */
+    @GetMapping("/{paymentId}")
+    @PreAuthorize("hasRole('CUSTOMER') or hasRole('LOAN_OFFICER') or hasRole('ADMIN')")
+    public ResponseEntity<Payment> getPayment(@PathVariable String paymentId) {
+        return ResponseEntity.ok(paymentService.getPayment(paymentId));
+    }
+}
