@@ -19,11 +19,14 @@ public class LoanService {
     private final LoanRepository repo;
     private final LoanApplicationClient loanApplicationClient;
     private final EMIService emiService;
+    private final LoanNotificationService notificationService;
 
-    public LoanService(LoanRepository repo, LoanApplicationClient loanApplicationClient, EMIService emiService) {
+    public LoanService(LoanRepository repo, LoanApplicationClient loanApplicationClient, 
+                     EMIService emiService, LoanNotificationService notificationService) {
         this.repo = repo;
         this.loanApplicationClient = loanApplicationClient;
         this.emiService = emiService;
+        this.notificationService = notificationService;
     }
 
     public List<Loan> list() {
@@ -81,6 +84,13 @@ public class LoanService {
 
         // Auto-generate EMI schedule after approval
         emiService.generateEMISchedule(saved.getId());
+        
+        // Send EMI notification to customer
+        if (app.getRatePercent() != null) {
+            notificationService.sendEMINotification(app.getUserId(), saved.getId(), 
+                app.getAmount(), app.getRatePercent(), app.getTermMonths());
+        }
+        
         return saved;
     }
 

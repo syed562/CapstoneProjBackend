@@ -19,6 +19,8 @@ import java.util.stream.Collectors;
 @Service
 public class LoanApplicationService {
     private final LoanApplicationRepository repo;
+    private final ApprovalCriteriaService approvalCriteriaService;
+    private final NotificationService notificationService;
     private final double minAmount;
     private final double maxAmount;
     private final Set<Integer> allowedTenures;
@@ -26,11 +28,15 @@ public class LoanApplicationService {
 
     public LoanApplicationService(
             LoanApplicationRepository repo,
+            ApprovalCriteriaService approvalCriteriaService,
+            NotificationService notificationService,
             @Value("${loan.rules.amount.min:5000}") double minAmount,
             @Value("${loan.rules.amount.max:2000000}") double maxAmount,
             @Value("${loan.rules.tenures:12,24,36}") String tenureOptions
     ) {
         this.repo = repo;
+        this.approvalCriteriaService = approvalCriteriaService;
+        this.notificationService = notificationService;
         this.minAmount = minAmount;
         this.maxAmount = maxAmount;
         this.allowedTenures = parseIntSet(tenureOptions);
@@ -89,9 +95,34 @@ public class LoanApplicationService {
         if (!"UNDER_REVIEW".equals(app.getStatus())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Application must be in UNDER_REVIEW status to approve");
         }
+        
+        // Validate approval criteria (credit score, income, liabilities)
+        ApprovalCriteriaService.ApprovalDecision decision = approvalCriteriaService.validateApprovalCriteria(
+            app.getUserId(), 
+            app.getAmount()
+        );
+        
+        if (!decision.isApproved()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+                "Loan cannot be approved: " + decision.getReason());
+        }
+        
         app.setStatus("APPROVED");
+        app.setRemarks(decision.getReason()); // Store approval reason
         app.setUpdatedAt(Instant.now().toString());
-        return repo.save(app);
+        LoanApplication saved = repo.save(app);
+        
+        // Send approval notification
+        notificationService.sendApprovalNotification(
+            app.getUserId(),
+            app.getId(),
+            app.getAmount(),
+            app.getTermMonths(),
+            app.getRatePercent() != null ? app.getRatePercent() : 0.0,
+            app.getLoanType().toString()
+        );
+        
+        return saved;
     }
 
     public LoanApplication reject(String id, String remarks) {
@@ -105,7 +136,12 @@ public class LoanApplicationService {
         app.setStatus("REJECTED");
         app.setRemarks(remarks);
         app.setUpdatedAt(Instant.now().toString());
-        return repo.save(app);
+        LoanApplication saved = repo.save(app);
+        
+        // Send rejection notification
+        notificationService.sendRejectionNotification(app.getUserId(), app.getId(), remarks);
+        
+        return saved;
     }
 
     public List<LoanApplication> listAll() {
