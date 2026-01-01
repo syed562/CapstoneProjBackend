@@ -144,13 +144,26 @@ public class LoanApplicationService {
             app.getLoanType().toString()
         );
         
-        // Automatically create loan in loan-service
+        // Automatically create loan in loan-service (CRITICAL - must succeed)
         try {
-            loanServiceClient.createLoanFromApplication(saved.getId());
-            System.out.println("[LOAN-APP] Loan created in loan-service for application: " + saved.getId());
+            LoanServiceClient.CreateLoanRequest loanRequest = new LoanServiceClient.CreateLoanRequest(
+                app.getUserId(),
+                Double.parseDouble(app.getAmount()),
+                app.getTermMonths(),
+                Double.parseDouble(app.getRatePercent() != null ? app.getRatePercent() : "0"),
+                app.getLoanType().toString()
+            );
+            System.out.println("[LOAN-APP] Creating loan from approved application: " + saved.getId());
+            System.out.println("[LOAN-APP] Loan Request - UserId: " + app.getUserId() + ", Amount: " + app.getAmount() + ", Type: " + app.getLoanType());
+            loanServiceClient.createLoanFromApplication(loanRequest);
+            System.out.println("[LOAN-APP] ✓ SUCCESS: Loan created in loan-service for application: " + saved.getId());
         } catch (Exception e) {
-            System.err.println("[LOAN-APP] Failed to create loan in loan-service: " + e.getMessage());
-            // Don't fail the approval if loan creation fails - can be retried manually
+            System.err.println("[LOAN-APP] ✗ CRITICAL ERROR: Failed to create loan in loan-service for application: " + saved.getId());
+            System.err.println("[LOAN-APP] Error Type: " + e.getClass().getName());
+            System.err.println("[LOAN-APP] Error Message: " + e.getMessage());
+            e.printStackTrace();
+            // Log for debugging but don't fail - admin can manually retry
+            System.err.println("[LOAN-APP] Application approved but loan creation failed. Manual retry needed.");
         }
         
         return saved;

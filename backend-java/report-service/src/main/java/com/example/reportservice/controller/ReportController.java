@@ -1,5 +1,6 @@
 package com.example.reportservice.controller;
 
+import com.example.reportservice.controller.dto.ComprehensiveReportDTO;
 import com.example.reportservice.controller.dto.CustomerLoanSummaryDTO;
 import com.example.reportservice.controller.dto.LoanStatusReportDTO;
 import com.example.reportservice.service.ReportService;
@@ -32,5 +33,10 @@ public class ReportController {
     @GetMapping("/dashboard")
     public ResponseEntity<Map<String, Object>> getDashboard() {
         return ResponseEntity.ok(reportService.getDashboardStatistics());
+    }
+
+    @GetMapping("/comprehensive")
+    public ResponseEntity<ComprehensiveReportDTO> getComprehensiveReport() {
+        return ResponseEntity.ok(reportService.getComprehensiveReport());
     }
 }

@@ -38,7 +38,7 @@ public class PaymentController {
      * Get all payments for a loan
      */
     @GetMapping("/loan/{loanId}")
-    public ResponseEntity<List<Payment>> getPaymentsByLoan(@PathVariable String loanId) {
+    public ResponseEntity<List<Payment>> getPaymentsByLoan(@PathVariable("loanId") String loanId) {
         return ResponseEntity.ok(paymentService.getPaymentsByLoan(loanId));
     }
 

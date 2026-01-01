@@ -9,6 +9,7 @@ import com.example.loanservice.emi.EMIService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.persistence.EntityManager;
@@ -116,6 +117,58 @@ public class LoanService {
         return repo.save(loan);
     }
 
+    /**
+     * Create loan from approved application
+     * This method is called by LoanApplicationService after approving an application
+     * LoanService is responsible only for creating the loan, not approving
+     */
+    @Transactional
+    public void createLoanFromApplication(com.example.loanservice.controller.dto.CreateLoanRequest req) {
+        System.out.println("[LOAN-SERVICE] Creating loan from approved application data");
+        System.out.println("[LOAN-SERVICE] Loan Request - UserId: " + req.getUserId() + ", Amount: " + req.getAmount() + ", Type: " + req.getLoanType());
+        
+        String now = Instant.now().toString();
+        Loan loan = new Loan();
+        loan.setId(UUID.randomUUID().toString());
+        loan.setUserId(req.getUserId());
+        loan.setAmount(req.getAmount());
+        loan.setLoanType(req.getLoanType());
+        loan.setTermMonths(req.getTermMonths());
+        Double resolvedRate = req.getRatePercent() != null ? req.getRatePercent() : resolveRateForType(req.getLoanType());
+        loan.setRatePercent(resolvedRate);
+        loan.setStatus("approved");
+        loan.setOutstandingBalance(req.getAmount());
+        loan.setCreatedAt(now);
+        loan.setUpdatedAt(now);
+        
+        System.out.println("[LOAN-SERVICE] Saving loan to database - Amount: " + loan.getAmount() + ", Type: " + loan.getLoanType() + ", TermMonths: " + loan.getTermMonths());
+        Loan saved = repo.save(loan);
+        System.out.println("[LOAN-SERVICE] ✓ Loan saved to database with ID: " + saved.getId());
+
+        // Auto-generate EMI schedule after approval
+        System.out.println("[LOAN-SERVICE] Generating EMI schedule for loan: " + saved.getId());
+        try {
+            emiService.generateEMISchedule(saved.getId());
+            System.out.println("[LOAN-SERVICE] ✓ EMI schedule generated successfully");
+        } catch (Exception e) {
+            System.err.println("[LOAN-SERVICE] ✗ EMI generation failed: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        // Send EMI notification to customer
+        System.out.println("[LOAN-SERVICE] Sending EMI notification to customer: " + req.getUserId());
+        try {
+            notificationService.sendEMINotification(req.getUserId(), saved.getId(),
+                req.getAmount(), resolvedRate, req.getTermMonths());
+            System.out.println("[LOAN-SERVICE] ✓ EMI notification sent");
+        } catch (Exception e) {
+            System.err.println("[LOAN-SERVICE] ✗ EMI notification failed: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        System.out.println("[LOAN-SERVICE] ✓ Loan creation complete from application request");
+    }
+
     public Loan approveFromApplication(String applicationId) {
         LoanApplicationView app = loanApplicationClient.getApplication(applicationId);
         if (app == null) {
@@ -138,15 +191,33 @@ public class LoanService {
         loan.setOutstandingBalance(app.getAmount());  // Initialize with full amount
         loan.setCreatedAt(now);
         loan.setUpdatedAt(now);
+        System.out.println("[LOAN-SERVICE] Creating loan from application: " + applicationId);
+        System.out.println("[LOAN-SERVICE] Loan Details - Amount: " + loan.getAmount() + ", Type: " + loan.getLoanType() + ", Tenure: " + loan.getTermMonths());
         Loan saved = repo.save(loan);
+        System.out.println("[LOAN-SERVICE] ✓ Loan saved to database with ID: " + saved.getId());
 
         // Auto-generate EMI schedule after approval
-        emiService.generateEMISchedule(saved.getId());
+        System.out.println("[LOAN-SERVICE] Generating EMI schedule for loan: " + saved.getId());
+        try {
+            emiService.generateEMISchedule(saved.getId());
+            System.out.println("[LOAN-SERVICE] ✓ EMI schedule generated successfully");
+        } catch (Exception e) {
+            System.err.println("[LOAN-SERVICE] ✗ EMI generation failed: " + e.getMessage());
+            e.printStackTrace();
+        }
         
         // Send EMI notification to customer
-        notificationService.sendEMINotification(app.getUserId(), saved.getId(),
-            app.getAmount(), resolvedRate, app.getTermMonths());
+        System.out.println("[LOAN-SERVICE] Sending EMI notification to customer: " + app.getUserId());
+        try {
+            notificationService.sendEMINotification(app.getUserId(), saved.getId(),
+                app.getAmount(), resolvedRate, app.getTermMonths());
+            System.out.println("[LOAN-SERVICE] ✓ EMI notification sent");
+        } catch (Exception e) {
+            System.err.println("[LOAN-SERVICE] ✗ EMI notification failed: " + e.getMessage());
+            e.printStackTrace();
+        }
         
+        System.out.println("[LOAN-SERVICE] ✓ Loan approval complete for application: " + applicationId);
         return saved;
     }
 

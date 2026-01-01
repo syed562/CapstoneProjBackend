@@ -69,6 +69,12 @@ public class LoanController {
         return loans.create(req.getUserId(), req.getLoanType(), req.getAmount(), req.getTermMonths(), req.getRatePercent());
     }
 
+    @PostMapping("/from-application")
+    @ResponseStatus(org.springframework.http.HttpStatus.CREATED)
+    public void createLoanFromApplication(@Valid @RequestBody CreateLoanRequest req) {
+        loans.createLoanFromApplication(req);
+    }
+
     @PatchMapping("/{id}/status")
     public Loan updateStatus(
             @PathVariable("id") String id,
