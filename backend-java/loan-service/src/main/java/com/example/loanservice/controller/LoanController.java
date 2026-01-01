@@ -88,6 +88,12 @@ public class LoanController {
         throw new UnsupportedOperationException("Reject by application not implemented");
     }
 
+    @PostMapping("/{id}/generate-emi")
+    public ResponseEntity<String> generateEMI(@PathVariable("id") String id) {
+        loans.generateEMIForLoan(id);
+        return ResponseEntity.ok("EMI schedule generated for loan " + id);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable("id") String id) {
         loans.delete(id);

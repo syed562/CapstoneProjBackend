@@ -165,6 +165,13 @@ public class LoanService {
         repo.deleteById(id);
     }
 
+    public void generateEMIForLoan(String loanId) {
+        if (!repo.existsById(loanId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Loan not found");
+        }
+        emiService.generateEMISchedule(loanId);
+    }
+
     private Map<LoanType, Double> parseRateMap(String csv) {
         Map<LoanType, Double> map = new HashMap<>();
         if (csv == null || csv.isBlank()) return map;
