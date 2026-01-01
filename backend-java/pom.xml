@@ -20,6 +20,7 @@
         <module>loan-application-service</module>
         <module>profile-service</module>
         <module>report-service</module>
+        <module>api-gateway</module>
     </modules>
 
     <dependencyManagement>
