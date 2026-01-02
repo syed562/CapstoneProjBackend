@@ -1,4 +1,4 @@
-package com.example.reportservice.controller.dto;
+package com.example.reportservice.dto;
 
 import lombok.Data;
 

@@ -4,8 +4,8 @@ import com.example.reportservice.client.LoanClient;
 import com.example.reportservice.client.LoanApplicationClient;
 import com.example.reportservice.client.dto.LoanDTO;
 import com.example.reportservice.client.dto.LoanApplicationDTO;
-import com.example.reportservice.controller.dto.CustomerLoanSummaryDTO;
-import com.example.reportservice.controller.dto.LoanStatusReportDTO;
+import com.example.reportservice.dto.CustomerLoanSummaryDTO;
+import com.example.reportservice.dto.LoanStatusReportDTO;
 import com.example.reportservice.controller.dto.ComprehensiveReportDTO;
 import org.springframework.stereotype.Service;
 
