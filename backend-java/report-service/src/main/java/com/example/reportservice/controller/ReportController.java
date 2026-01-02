@@ -1,15 +1,19 @@
 package com.example.reportservice.controller;
 
-import com.example.reportservice.controller.dto.ComprehensiveReportDTO;
-import com.example.reportservice.controller.dto.CustomerLoanSummaryDTO;
-import com.example.reportservice.controller.dto.LoanStatusReportDTO;
-import com.example.reportservice.service.ReportService;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.example.reportservice.controller.dto.ComprehensiveReportDTO;
+import com.example.reportservice.dto.CustomerLoanSummaryDTO;
+import com.example.reportservice.dto.LoanStatusReportDTO;
+import com.example.reportservice.service.ReportService;
 
 @RestController
 @RequestMapping("/api/reports")
