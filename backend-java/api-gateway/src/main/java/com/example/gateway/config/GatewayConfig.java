@@ -16,6 +16,11 @@ public class GatewayConfig {
                         .path("/api/auth/**")
                         .uri("http://localhost:8083"))
 
+                // User Management Routes (Auth Service)
+                .route("user-management", r -> r
+                        .path("/api/users/**")
+                        .uri("http://localhost:8083"))
+
                 // Profile Service Routes
                 .route("profile-service", r -> r
                         .path("/api/profiles/**")
