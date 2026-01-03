@@ -5,6 +5,7 @@ import com.example.loanapplication.MODELS.LoanType;
 import com.example.loanapplication.client.LoanServiceClient;
 import com.example.loanapplication.client.ProfileServiceClient;
 import com.example.loanapplication.client.dto.ProfileView;
+import com.example.loanapplication.event.LoanApplicationEvent;
 import com.example.loanapplication.repository.LoanApplicationRepository;
 import feign.FeignException;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,6 +30,7 @@ public class LoanApplicationService {
     private final NotificationService notificationService;
     private final ProfileServiceClient profileServiceClient;
     private final LoanServiceClient loanServiceClient;
+    private final NotificationPublisher notificationPublisher;
     private final double minAmount;
     private final double maxAmount;
     private final Set<Integer> allowedTenures;
@@ -41,16 +43,18 @@ public class LoanApplicationService {
             NotificationService notificationService,
             ProfileServiceClient profileServiceClient,
             LoanServiceClient loanServiceClient,
+            NotificationPublisher notificationPublisher,
             @Value("${loan.rules.amount.min:5000}") double minAmount,
             @Value("${loan.rules.amount.max:2000000}") double maxAmount,
             @Value("${loan.rules.tenures:12,24,36}") String tenureOptions,
-            @Value("${loan.rules.rates:PERSONAL=12,HOME=8.5,AUTO=10}") String rateOptions
+            @Value("${loan.rules.rates:PERSONAL=12,HOME=8.5,AUTO=10,EDUCATIONAL=7.5,HOME_LOAN=8.5}") String rateOptions
     ) {
         this.repo = repo;
         this.approvalCriteriaService = approvalCriteriaService;
         this.notificationService = notificationService;
         this.profileServiceClient = profileServiceClient;
         this.loanServiceClient = loanServiceClient;
+        this.notificationPublisher = notificationPublisher;
         this.minAmount = minAmount;
         this.maxAmount = maxAmount;
         this.allowedTenures = parseIntSet(tenureOptions);
@@ -87,7 +91,21 @@ public class LoanApplicationService {
         app.setStatus("SUBMITTED");
         app.setCreatedAt(now);
         app.setUpdatedAt(now);
-        return repo.save(app);
+        LoanApplication savedApp = repo.save(app);
+        
+        // Publish loan application created event
+        try {
+            LoanApplicationEvent event = new LoanApplicationEvent();
+            event.setApplicationId(savedApp.getId());
+            event.setUserId(userId);
+            event.setLoanAmount(amount);
+            notificationPublisher.publishApplicationCreated(event);
+        } catch (Exception e) {
+            // Log but don't fail application creation if notification fails
+            System.err.println("Failed to publish loan application event: " + e.getMessage());
+        }
+        
+        return savedApp;
     }
 
     public List<LoanApplication> listByUser(String userId) {
@@ -166,6 +184,17 @@ public class LoanApplicationService {
             System.err.println("[LOAN-APP] Application approved but loan creation failed. Manual retry needed.");
         }
         
+        // Publish approval event
+        try {
+            LoanApplicationEvent event = new LoanApplicationEvent();
+            event.setApplicationId(saved.getId());
+            event.setUserId(saved.getUserId());
+            event.setLoanAmount(Double.parseDouble(saved.getAmount()));
+            notificationPublisher.publishApplicationApproved(event);
+        } catch (Exception e) {
+            System.err.println("Failed to publish approval event: " + e.getMessage());
+        }
+        
         return saved;
     }
 
@@ -182,8 +211,17 @@ public class LoanApplicationService {
         app.setUpdatedAt(Instant.now().toString());
         LoanApplication saved = repo.save(app);
         
-        // Send rejection notification
-        notificationService.sendRejectionNotification(app.getUserId(), app.getId(), remarks);
+        // Publish rejection event
+        try {
+            LoanApplicationEvent event = new LoanApplicationEvent();
+            event.setApplicationId(saved.getId());
+            event.setUserId(saved.getUserId());
+            event.setLoanAmount(Double.parseDouble(saved.getAmount()));
+            event.setRemarks(remarks);
+            notificationPublisher.publishApplicationRejected(event);
+        } catch (Exception e) {
+            System.err.println("Failed to publish rejection event: " + e.getMessage());
+        }
         
         return saved;
     }

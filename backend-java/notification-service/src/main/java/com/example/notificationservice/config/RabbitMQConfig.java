@@ -4,6 +4,11 @@ import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.amqp.support.converter.MessageConverter;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -22,6 +27,23 @@ public class RabbitMQConfig {
     public static final String LOAN_CLOSURE_QUEUE = "loan-closure-queue";
     public static final String EMI_ROUTING_KEY = "emi.*";
     
+    // Jackson Message Converter for JSON serialization
+    @Bean
+    public Jackson2JsonMessageConverter messageConverter() {
+        return new Jackson2JsonMessageConverter();
+    }
+
+    // Use JSON converter for all listeners to avoid Java serialization
+    @Bean
+    public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(
+            ConnectionFactory connectionFactory,
+            MessageConverter messageConverter) {
+        SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
+        factory.setConnectionFactory(connectionFactory);
+        factory.setMessageConverter(messageConverter);
+        return factory;
+    }
+    
     // Loan Application Configuration
     @Bean
     public TopicExchange loanApplicationExchange() {
@@ -34,7 +56,9 @@ public class RabbitMQConfig {
     }
     
     @Bean
-    public Binding loanApplicationBinding(Queue loanApplicationQueue, TopicExchange loanApplicationExchange) {
+        public Binding loanApplicationBinding(
+            @Qualifier("loanApplicationQueue") Queue loanApplicationQueue,
+            @Qualifier("loanApplicationExchange") TopicExchange loanApplicationExchange) {
         return BindingBuilder.bind(loanApplicationQueue)
                 .to(loanApplicationExchange)
                 .with(LOAN_APPLICATION_ROUTING_KEY);
@@ -62,21 +86,27 @@ public class RabbitMQConfig {
     }
     
     @Bean
-    public Binding emiDueBinding(Queue emiDueQueue, TopicExchange emiExchange) {
+        public Binding emiDueBinding(
+            @Qualifier("emiDueQueue") Queue emiDueQueue,
+            @Qualifier("emiExchange") TopicExchange emiExchange) {
         return BindingBuilder.bind(emiDueQueue)
                 .to(emiExchange)
                 .with("emi.due");
     }
     
     @Bean
-    public Binding emiOverdueBinding(Queue emiOverdueQueue, TopicExchange emiExchange) {
+        public Binding emiOverdueBinding(
+            @Qualifier("emiOverdueQueue") Queue emiOverdueQueue,
+            @Qualifier("emiExchange") TopicExchange emiExchange) {
         return BindingBuilder.bind(emiOverdueQueue)
                 .to(emiExchange)
                 .with("emi.overdue");
     }
     
     @Bean
-    public Binding loanClosureBinding(Queue loanClosureQueue, TopicExchange emiExchange) {
+        public Binding loanClosureBinding(
+            @Qualifier("loanClosureQueue") Queue loanClosureQueue,
+            @Qualifier("emiExchange") TopicExchange emiExchange) {
         return BindingBuilder.bind(loanClosureQueue)
                 .to(emiExchange)
                 .with("loan.closed");

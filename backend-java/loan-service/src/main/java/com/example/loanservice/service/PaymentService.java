@@ -5,12 +5,14 @@ import com.example.loanservice.domain.Payment;
 import com.example.loanservice.domain.LoanRepository;
 import com.example.loanservice.emi.EMISchedule;
 import com.example.loanservice.emi.EMIScheduleRepository;
+import com.example.loanservice.event.EMIEvent;
 import com.example.loanservice.repository.PaymentRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,11 +21,14 @@ public class PaymentService {
     private final PaymentRepository paymentRepo;
     private final LoanRepository loanRepo;
     private final EMIScheduleRepository emiRepo;
+    private final NotificationPublisher notificationPublisher;
 
-    public PaymentService(PaymentRepository paymentRepo, LoanRepository loanRepo, EMIScheduleRepository emiRepo) {
+    public PaymentService(PaymentRepository paymentRepo, LoanRepository loanRepo, EMIScheduleRepository emiRepo,
+                         NotificationPublisher notificationPublisher) {
         this.paymentRepo = paymentRepo;
         this.loanRepo = loanRepo;
         this.emiRepo = emiRepo;
+        this.notificationPublisher = notificationPublisher;
     }
 
     /**
@@ -79,13 +84,32 @@ public class PaymentService {
         loan.setOutstandingBalance(newBalance);
         loan.setUpdatedAt(now);
 
-        // If balance is zero, mark loan as CLOSED
+        // If balance is zero, mark loan as CLOSED and publish event
         if (newBalance <= 0.01) {  // Account for floating point precision
             loan.setStatus("CLOSED");
+            publishLoanClosureEvent(loan);
         }
         loanRepo.save(loan);
 
         return savedPayment;
+    }
+    
+    /**
+     * Publish loan closure event when all EMIs are paid
+     */
+    private void publishLoanClosureEvent(Loan loan) {
+        try {
+            EMIEvent closureEvent = new EMIEvent();
+            closureEvent.setLoanId(loan.getId());
+            closureEvent.setUserId(loan.getUserId());
+            closureEvent.setOutstandingBalance(0.0);
+            closureEvent.setDueDate(LocalDate.now());
+            
+            notificationPublisher.publishLoanClosed(closureEvent);
+        } catch (Exception e) {
+            // Log but don't fail payment if notification fails
+            System.err.println("Failed to publish loan closure event for loan " + loan.getId() + ": " + e.getMessage());
+        }
     }
 
     /**
