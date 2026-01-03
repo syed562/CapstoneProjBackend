@@ -8,6 +8,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.*;
 
 @DisplayName("LoanApplicationEventListener Tests")
@@ -36,13 +37,16 @@ class LoanApplicationEventListenerTest {
         event.setLoanAmount(100000.0);
         event.setEventType("CREATED");
 
-        doNothing().when(emailService).sendLoanCreatedMail(event);
+        doNothing().when(emailService).sendLoanApplicationNotification(
+            anyString(), anyString(), anyString(), anyString(), anyDouble(), anyString());
 
         // Act
         listener.handleLoanApplicationEvent(event);
 
         // Assert
-        verify(emailService, times(1)).sendLoanCreatedMail(event);
+        verify(emailService, times(1)).sendLoanApplicationNotification(
+            eq("user@example.com"), eq("John Doe"), eq("SUBMITTED"), 
+            eq("app123"), eq(100000.0), anyString());
     }
 
     @Test
@@ -53,15 +57,19 @@ class LoanApplicationEventListenerTest {
         event.setApplicationId("app123");
         event.setEventType("APPROVED");
         event.setUserEmail("user@example.com");
+        event.setUserName("Jane Doe");
         event.setLoanAmount(100000.0);
 
-        doNothing().when(emailService).sendApprovalMail(event);
+        doNothing().when(emailService).sendLoanApplicationNotification(
+            anyString(), anyString(), anyString(), anyString(), anyDouble(), anyString());
 
         // Act
         listener.handleLoanApplicationEvent(event);
 
         // Assert
-        verify(emailService, times(1)).sendApprovalMail(event);
+        verify(emailService, times(1)).sendLoanApplicationNotification(
+            eq("user@example.com"), eq("Jane Doe"), eq("APPROVED"), 
+            eq("app123"), eq(100000.0), anyString());
     }
 
     @Test
@@ -72,71 +80,43 @@ class LoanApplicationEventListenerTest {
         event.setApplicationId("app123");
         event.setEventType("REJECTED");
         event.setUserEmail("user@example.com");
+        event.setUserName("Bob Smith");
+        event.setLoanAmount(50000.0);
         event.setRemarks("Insufficient income");
 
-        doNothing().when(emailService).sendRejectionMail(event);
+        doNothing().when(emailService).sendLoanApplicationNotification(
+            anyString(), anyString(), anyString(), anyString(), anyDouble(), anyString());
 
         // Act
         listener.handleLoanApplicationEvent(event);
 
         // Assert
-        verify(emailService, times(1)).sendRejectionMail(event);
+        verify(emailService, times(1)).sendLoanApplicationNotification(
+            eq("user@example.com"), eq("Bob Smith"), eq("REJECTED"), 
+            eq("app123"), eq(50000.0), contains("Insufficient income"));
     }
 
     @Test
-    @DisplayName("Should handle EMI due event")
-    void testHandleEmiDueEvent() {
+    @DisplayName("Should handle under review event")
+    void testHandleUnderReviewEvent() {
         // Arrange
         LoanApplicationEvent event = new LoanApplicationEvent();
-        event.setEventType("EMI_DUE");
-        event.setUserEmail("user@example.com");
-        event.setUserName("John Doe");
-        event.setLoanAmount(4400.0);
+        event.setApplicationId("app456");
+        event.setEventType("UNDER_REVIEW");
+        event.setUserEmail("user2@example.com");
+        event.setUserName("Alice Brown");
+        event.setLoanAmount(200000.0);
 
-        doNothing().when(emailService).sendEmiDueReminder(event);
+        doNothing().when(emailService).sendLoanApplicationNotification(
+            anyString(), anyString(), anyString(), anyString(), anyDouble(), anyString());
 
         // Act
         listener.handleLoanApplicationEvent(event);
 
         // Assert
-        verify(emailService, times(1)).sendEmiDueReminder(event);
-    }
-
-    @Test
-    @DisplayName("Should handle EMI overdue event")
-    void testHandleEmiOverdueEvent() {
-        // Arrange
-        LoanApplicationEvent event = new LoanApplicationEvent();
-        event.setEventType("EMI_OVERDUE");
-        event.setUserEmail("user@example.com");
-        event.setLoanAmount(4400.0);
-
-        doNothing().when(emailService).sendEmiOverdueAlert(event);
-
-        // Act
-        listener.handleLoanApplicationEvent(event);
-
-        // Assert
-        verify(emailService, times(1)).sendEmiOverdueAlert(event);
-    }
-
-    @Test
-    @DisplayName("Should handle loan closed event")
-    void testHandleLoanClosedEvent() {
-        // Arrange
-        LoanApplicationEvent event = new LoanApplicationEvent();
-        event.setEventType("LOAN_CLOSED");
-        event.setUserEmail("user@example.com");
-        event.setUserName("John Doe");
-        event.setLoanAmount(100000.0);
-
-        doNothing().when(emailService).sendLoanClosureMail(event);
-
-        // Act
-        listener.handleLoanApplicationEvent(event);
-
-        // Assert
-        verify(emailService, times(1)).sendLoanClosureMail(event);
+        verify(emailService, times(1)).sendLoanApplicationNotification(
+            eq("user2@example.com"), eq("Alice Brown"), eq("UNDER REVIEW"), 
+            eq("app456"), eq(200000.0), anyString());
     }
 
     @Test
@@ -151,6 +131,26 @@ class LoanApplicationEventListenerTest {
         assertDoesNotThrow(() -> listener.handleLoanApplicationEvent(event));
 
         // Assert - No email should be sent for unknown event
-        verify(emailService, never()).sendLoanCreatedMail(any());
+        verify(emailService, never()).sendLoanApplicationNotification(
+            anyString(), anyString(), anyString(), anyString(), anyDouble(), anyString());
+    }
+
+    @Test
+    @DisplayName("Should not throw exception on email service failure")
+    void testHandleEmailServiceFailure() {
+        // Arrange
+        LoanApplicationEvent event = new LoanApplicationEvent();
+        event.setApplicationId("app789");
+        event.setEventType("CREATED");
+        event.setUserEmail("user@example.com");
+        event.setUserName("Test User");
+        event.setLoanAmount(75000.0);
+
+        doThrow(new RuntimeException("Email service unavailable"))
+            .when(emailService).sendLoanApplicationNotification(
+                anyString(), anyString(), anyString(), anyString(), anyDouble(), anyString());
+
+        // Act & Assert - Should not throw exception, just log it
+        assertDoesNotThrow(() -> listener.handleLoanApplicationEvent(event));
     }
 }

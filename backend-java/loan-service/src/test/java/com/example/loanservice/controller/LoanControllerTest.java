@@ -2,10 +2,12 @@ package com.example.loanservice.controller;
 
 import com.example.loanservice.domain.Loan;
 import com.example.loanservice.domain.Payment;
+import com.example.loanservice.domain.LoanType;
 import com.example.loanservice.service.LoanService;
 import com.example.loanservice.service.PaymentService;
 import com.example.loanservice.controller.dto.CreateLoanRequest;
 import com.example.loanservice.controller.dto.UpdateStatusRequest;
+import com.example.loanservice.controller.RecordPaymentRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
@@ -63,7 +65,7 @@ class LoanControllerTest {
         loan.setId("loan1");
 
         Page<Loan> page = new PageImpl<>(List.of(loan), PageRequest.of(0, 20), 1);
-        when(loanService.listPaged(0, 20, any())).thenReturn(page);
+        when(loanService.listPaged(anyInt(), anyInt(), any())).thenReturn(page);
 
         // Act
         Page<Loan> result = controller.listPaged(0, 20, "createdAt,desc");
@@ -134,7 +136,7 @@ class LoanControllerTest {
         // Arrange
         CreateLoanRequest req = new CreateLoanRequest();
         req.setUserId("user123");
-        req.setLoanType("PERSONAL");
+        req.setLoanType(LoanType.PERSONAL);
         req.setAmount(100000.0);
         req.setTermMonths(24);
         req.setRatePercent(12.0);
@@ -142,7 +144,7 @@ class LoanControllerTest {
         Loan loan = new Loan();
         loan.setId("loan123");
 
-        when(loanService.create("user123", "PERSONAL", 100000.0, 24, 12.0)).thenReturn(loan);
+        when(loanService.create("user123", LoanType.PERSONAL, 100000.0, 24, 12.0)).thenReturn(loan);
 
         // Act
         Loan result = controller.create(req);
@@ -150,7 +152,7 @@ class LoanControllerTest {
         // Assert
         assertNotNull(result);
         assertEquals("loan123", result.getId());
-        verify(loanService, times(1)).create(anyString(), anyString(), anyDouble(), anyInt(), anyDouble());
+        verify(loanService, times(1)).create(anyString(), any(LoanType.class), anyDouble(), anyInt(), anyDouble());
     }
 
     @Test

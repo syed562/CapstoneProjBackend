@@ -1,256 +1,132 @@
 package com.example.loanservice.service;
 
-import com.example.loanservice.domain.Loan;
-import com.example.loanservice.emi.EMI;
-import com.example.loanservice.repository.LoanRepository;
-import com.example.loanservice.repository.EMIRepository;
 import com.example.loanservice.client.LoanApplicationClient;
 import com.example.loanservice.client.dto.LoanApplicationView;
+import com.example.loanservice.domain.Loan;
+import com.example.loanservice.domain.LoanRepository;
+import com.example.loanservice.domain.LoanType;
+import com.example.loanservice.emi.EMIService;
+import com.example.loanservice.controller.dto.CreateLoanRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.DisplayName;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@DisplayName("LoanService Tests")
 class LoanServiceTest {
 
     @Mock
-    private LoanRepository loanRepo;
-
-    @Mock
-    private EMIRepository emiRepo;
+    private LoanRepository repo;
 
     @Mock
     private LoanApplicationClient loanApplicationClient;
 
     @Mock
-    private EMICalculationService emiCalculationService;
+    private EMIService emiService;
 
+    @Mock
+    private LoanNotificationService notificationService;
+
+    @InjectMocks
     private LoanService loanService;
 
     @BeforeEach
-    void setUp() {
+    void setup() {
         MockitoAnnotations.openMocks(this);
-        loanService = new LoanService(loanRepo, emiRepo, loanApplicationClient, emiCalculationService);
-    }
-
-    @Test
-    @DisplayName("Should create loan successfully")
-    void testCreateLoanSuccess() {
-        // Arrange
-        String userId = "user123";
-        String loanType = "PERSONAL";
-        Double amount = 100000.0;
-        Integer termMonths = 24;
-        Double ratePercent = 12.0;
-
-        Loan savedLoan = new Loan();
-        savedLoan.setId(UUID.randomUUID().toString());
-        savedLoan.setUserId(userId);
-        savedLoan.setLoanType(loanType);
-        savedLoan.setAmount(amount);
-        savedLoan.setTermMonths(termMonths);
-        savedLoan.setRatePercent(ratePercent);
-        savedLoan.setStatus("ACTIVE");
-
-        when(loanRepo.save(any(Loan.class))).thenReturn(savedLoan);
-
-        // Act
-        Loan result = loanService.create(userId, loanType, amount, termMonths, ratePercent);
-
-        // Assert
-        assertNotNull(result);
-        assertEquals(userId, result.getUserId());
-        assertEquals(loanType, result.getLoanType());
-        assertEquals(amount, result.getAmount());
-        verify(loanRepo, times(1)).save(any(Loan.class));
-    }
-
-    @Test
-    @DisplayName("Should list all loans")
-    void testListAllLoans() {
-        // Arrange
-        Loan loan1 = new Loan();
-        loan1.setId("loan1");
-        Loan loan2 = new Loan();
-        loan2.setId("loan2");
-
-        when(loanRepo.findAll()).thenReturn(List.of(loan1, loan2));
-
-        // Act
-        List<Loan> result = loanService.list();
-
-        // Assert
-        assertEquals(2, result.size());
-        verify(loanRepo, times(1)).findAll();
-    }
-
-    @Test
-    @DisplayName("Should list loans with pagination")
-    void testListLoansWithPagination() {
-        // Arrange
-        Loan loan1 = new Loan();
-        loan1.setId("loan1");
-        
-        Pageable pageable = PageRequest.of(0, 10);
-        Page<Loan> page = new PageImpl<>(List.of(loan1), pageable, 1);
-
-        when(loanRepo.findAll(pageable)).thenReturn(page);
-
-        // Act
-        Page<Loan> result = loanService.listPaged(0, 10, 
-                org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "createdAt"));
-
-        // Assert
-        assertEquals(1, result.getTotalElements());
-        verify(loanRepo, times(1)).findAll(any(Pageable.class));
-    }
-
-    @Test
-    @DisplayName("Should get loan by ID")
-    void testGetLoanSuccess() {
-        // Arrange
-        String loanId = "loan123";
-        Loan loan = new Loan();
-        loan.setId(loanId);
-        loan.setStatus("ACTIVE");
-
-        when(loanRepo.findById(loanId)).thenReturn(Optional.of(loan));
-
-        // Act
-        Loan result = loanService.get(loanId);
-
-        // Assert
-        assertNotNull(result);
-        assertEquals(loanId, result.getId());
-        verify(loanRepo, times(1)).findById(loanId);
-    }
-
-    @Test
-    @DisplayName("Should throw 404 when loan not found")
-    void testGetLoanNotFound() {
-        // Arrange
-        String loanId = "nonexistent";
-        when(loanRepo.findById(loanId)).thenReturn(Optional.empty());
-
-        // Act & Assert
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () ->
-                loanService.get(loanId)
+        loanService = new LoanService(
+                repo,
+                loanApplicationClient,
+                emiService,
+                notificationService,
+                "PERSONAL=12,HOME=8.5,AUTO=10"
         );
-
-        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
     }
 
     @Test
-    @DisplayName("Should update loan status")
-    void testUpdateStatusSuccess() {
-        // Arrange
-        String loanId = "loan123";
-        Loan loan = new Loan();
-        loan.setId(loanId);
-        loan.setStatus("ACTIVE");
-
-        when(loanRepo.findById(loanId)).thenReturn(Optional.of(loan));
-        when(loanRepo.save(any(Loan.class))).thenReturn(loan);
-
-        // Act
-        Loan result = loanService.updateStatus(loanId, "CLOSED");
-
-        // Assert
-        assertNotNull(result);
-        verify(loanRepo, times(1)).save(any(Loan.class));
+    void list_shouldReturnAllLoans() {
+        when(repo.findAll()).thenReturn(List.of(new Loan()));
+        assertEquals(1, loanService.list().size());
     }
 
     @Test
-    @DisplayName("Should list loans by user")
-    void testListByUser() {
-        // Arrange
-        String userId = "user123";
-        Loan loan = new Loan();
-        loan.setUserId(userId);
-
-        when(loanRepo.findByUserId(userId)).thenReturn(List.of(loan));
-
-        // Act
-        List<Loan> result = loanService.listByUser(userId);
-
-        // Assert
-        assertEquals(1, result.size());
-        assertEquals(userId, result.get(0).getUserId());
-        verify(loanRepo, times(1)).findByUserId(userId);
+    void listByUser_blankUser_shouldThrow400() {
+        ResponseStatusException ex =
+                assertThrows(ResponseStatusException.class, () -> loanService.listByUser(" "));
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
     }
 
     @Test
-    @DisplayName("Should find loans by status and amount range")
-    void testFindByStatusAndAmount() {
-        // Arrange
-        Loan loan = new Loan();
-        loan.setStatus("ACTIVE");
-        loan.setAmount(100000.0);
-
-        when(loanRepo.findByStatusAndAmountBetween("ACTIVE", 50000.0, 150000.0))
-                .thenReturn(List.of(loan));
-
-        // Act
-        List<Loan> result = loanService.findByStatusAndAmount("ACTIVE", 50000.0, 150000.0);
-
-        // Assert
-        assertEquals(1, result.size());
-        verify(loanRepo, times(1)).findByStatusAndAmountBetween(anyString(), anyDouble(), anyDouble());
+    void get_notFound_shouldThrow404() {
+        when(repo.findById("id")).thenReturn(Optional.empty());
+        assertThrows(ResponseStatusException.class, () -> loanService.get("id"));
     }
 
     @Test
-    @DisplayName("Should generate EMI schedule for loan")
-    void testGenerateEMISuccess() {
-        // Arrange
-        String loanId = "loan123";
-        Loan loan = new Loan();
-        loan.setId(loanId);
-        loan.setAmount(100000.0);
-        loan.setTermMonths(24);
-        loan.setRatePercent(12.0);
-
-        when(loanRepo.findById(loanId)).thenReturn(Optional.of(loan));
-        when(emiCalculationService.calculateEMI(100000.0, 24, 12.0)).thenReturn(4400.0);
-        when(emiRepo.save(any(EMI.class))).thenReturn(new EMI());
-
-        // Act
-        loanService.generateEMIForLoan(loanId);
-
-        // Assert
-        verify(emiCalculationService, times(1)).calculateEMI(anyDouble(), anyInt(), anyDouble());
-        verify(emiRepo, atLeastOnce()).save(any(EMI.class));
+    void create_shouldUseDefaultRate() {
+        when(repo.save(any())).thenAnswer(i -> i.getArgument(0));
+        Loan loan = loanService.create("u1", LoanType.PERSONAL, 10000, 12, null);
+        assertEquals(12.0, loan.getRatePercent());
     }
 
     @Test
-    @DisplayName("Should delete loan")
-    void testDeleteLoan() {
-        // Arrange
-        String loanId = "loan123";
+    void updateStatus_success() {
         Loan loan = new Loan();
-        loan.setId(loanId);
+        when(repo.findById("id")).thenReturn(Optional.of(loan));
+        when(repo.save(any())).thenReturn(loan);
 
-        when(loanRepo.findById(loanId)).thenReturn(Optional.of(loan));
-        doNothing().when(loanRepo).delete(any(Loan.class));
+        Loan updated = loanService.updateStatus("id", "CLOSED");
+        assertEquals("CLOSED", updated.getStatus());
+    }
 
-        // Act
-        loanService.delete(loanId);
+    @Test
+    void delete_notFound_shouldThrow() {
+        when(repo.existsById("x")).thenReturn(false);
+        assertThrows(ResponseStatusException.class, () -> loanService.delete("x"));
+    }
 
-        // Assert
-        verify(loanRepo, times(1)).delete(any(Loan.class));
+    @Test
+    void generateEMIForLoan_notFound_shouldThrow() {
+        when(repo.existsById("x")).thenReturn(false);
+        assertThrows(ResponseStatusException.class, () -> loanService.generateEMIForLoan("x"));
+    }
+
+    @Test
+    void approveFromApplication_success() {
+        LoanApplicationView view = new LoanApplicationView();
+        view.setUserId("u1");
+        view.setAmount(50000.0);
+        view.setLoanType("PERSONAL");
+        view.setTermMonths(12);
+        view.setRatePercent(10.0);
+
+        when(loanApplicationClient.getApplication("app1")).thenReturn(view);
+        when(repo.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        Loan loan = loanService.approveFromApplication("app1");
+        assertEquals("approved", loan.getStatus());
+        verify(emiService).generateEMISchedule(any());
+        verify(notificationService).sendEMINotification(any(), any(), anyDouble(), anyDouble(), anyInt());
+    }
+
+    @Test
+    void createLoanFromApplication_shouldCreateLoan() {
+        CreateLoanRequest req = new CreateLoanRequest();
+        req.setUserId("u1");
+        req.setAmount(10000.0);
+        req.setLoanType(LoanType.AUTO);
+        req.setTermMonths(24);
+
+        when(repo.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        assertDoesNotThrow(() -> loanService.createLoanFromApplication(req));
+        verify(emiService).generateEMISchedule(any());
     }
 }

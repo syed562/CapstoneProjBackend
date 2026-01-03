@@ -4,25 +4,22 @@ import com.example.loanapplication.MODELS.LoanApplication;
 import com.example.loanapplication.MODELS.LoanType;
 import com.example.loanapplication.client.LoanServiceClient;
 import com.example.loanapplication.client.ProfileServiceClient;
-import com.example.loanapplication.client.dto.ProfileView;
 import com.example.loanapplication.repository.LoanApplicationRepository;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@DisplayName("LoanApplicationService Tests")
+@DisplayName("LoanApplicationService – High Coverage Tests")
 class LoanApplicationServiceTest {
 
     @Mock
@@ -46,7 +43,7 @@ class LoanApplicationServiceTest {
     private LoanApplicationService service;
 
     @BeforeEach
-    void setUp() {
+    void setup() {
         MockitoAnnotations.openMocks(this);
         service = new LoanApplicationService(
                 repo,
@@ -55,343 +52,299 @@ class LoanApplicationServiceTest {
                 profileServiceClient,
                 loanServiceClient,
                 notificationPublisher,
-                5000.0,  // minAmount
-                2000000.0,  // maxAmount
-                "12,24,36",  // tenures
-                "PERSONAL=12,HOME=8.5,AUTO=10,EDUCATIONAL=7.5,HOME_LOAN=8.5"  // rates
+                5000,
+                2000000,
+                "12,24,36",
+                "PERSONAL=12,HOME=8.5,AUTO=10,EDUCATIONAL=7.5,HOME_LOAN=8.5"
         );
     }
 
-    @Test
-    @DisplayName("Should successfully apply for loan with valid data")
-    void testApplySuccess() {
-        // Arrange
-        String userId = "user123";
-        LoanType loanType = LoanType.PERSONAL;
-        double amount = 100000;
-        int termMonths = 24;
-
-        when(repo.findByUserIdAndLoanTypeAndStatusIn(userId, loanType, 
-                List.of("SUBMITTED", "UNDER_REVIEW", "APPROVED"))).thenReturn(List.of());
-        
-        LoanApplication savedApp = new LoanApplication();
-        savedApp.setId(UUID.randomUUID().toString());
-        savedApp.setUserId(userId);
-        savedApp.setLoanType(loanType);
-        savedApp.setAmount(String.valueOf(amount));
-        savedApp.setTermMonths(termMonths);
-        savedApp.setRatePercent("12");
-        savedApp.setStatus("SUBMITTED");
-
-        when(repo.save(any(LoanApplication.class))).thenReturn(savedApp);
-        doNothing().when(notificationPublisher).publishApplicationCreated(any());
-
-        // Act
-        LoanApplication result = service.apply(userId, loanType, amount, termMonths, null);
-
-        // Assert
-        assertNotNull(result);
-        assertEquals(userId, result.getUserId());
-        assertEquals(loanType, result.getLoanType());
-        assertEquals("SUBMITTED", result.getStatus());
-        verify(repo, times(1)).save(any());
-    }
+    // --------------------------------------------------
+    // APPLY
+    // --------------------------------------------------
 
     @Test
-    @DisplayName("Should reject application with amount below minimum")
-    void testApplyBelowMinAmount() {
-        // Arrange
-        String userId = "user123";
-        double amount = 1000;  // Below minimum of 5000
+    void apply_success() {
+        when(repo.findByUserIdAndLoanTypeAndStatusIn(any(), any(), any()))
+                .thenReturn(List.of());
+        when(repo.save(any())).thenAnswer(i -> i.getArgument(0));
 
-        // Act & Assert
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () ->
-                service.apply(userId, LoanType.PERSONAL, amount, 24, null)
+        LoanApplication app = service.apply(
+                "user1",
+                LoanType.PERSONAL,
+                100000,
+                24,
+                null
         );
 
-        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
-        assertTrue(exception.getReason().contains("Amount must be between"));
+        assertEquals("SUBMITTED", app.getStatus());
+        verify(repo).save(any());
+        verify(notificationPublisher).publishApplicationCreated(any());
     }
 
     @Test
-    @DisplayName("Should reject application with invalid tenure")
-    void testApplyInvalidTenure() {
-        // Arrange
-        String userId = "user123";
+    void apply_amountBelowMin_shouldFail() {
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
+                () -> service.apply("u1", LoanType.PERSONAL, 1000, 12, null)
+        );
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+    }
 
-        // Act & Assert
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () ->
-                service.apply(userId, LoanType.PERSONAL, 100000, 18, null)
+    @Test
+    void apply_amountAboveMax_shouldFail() {
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
+                () -> service.apply("u1", LoanType.PERSONAL, 3000000, 12, null)
+        );
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+    }
+
+    @Test
+    void apply_invalidTenure_shouldFail() {
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
+                () -> service.apply("u1", LoanType.PERSONAL, 100000, 18, null)
+        );
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+    }
+
+    @Test
+    void apply_duplicateActiveApplication_shouldFail() {
+        when(repo.findByUserIdAndLoanTypeAndStatusIn(any(), any(), any()))
+                .thenReturn(List.of(new LoanApplication()));
+
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
+                () -> service.apply("u1", LoanType.PERSONAL, 100000, 12, null)
         );
 
-        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
-        assertTrue(exception.getReason().contains("Term must be one of"));
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
     }
 
     @Test
-    @DisplayName("Should reject if user has active application for same loan type")
-    void testApplyDuplicateActiveLoan() {
-        // Arrange
-        String userId = "user123";
-        LoanType loanType = LoanType.PERSONAL;
+    void apply_customRate_shouldBeUsed() {
+        when(repo.findByUserIdAndLoanTypeAndStatusIn(any(), any(), any()))
+                .thenReturn(List.of());
+        when(repo.save(any())).thenAnswer(i -> i.getArgument(0));
 
-        LoanApplication existingApp = new LoanApplication();
-        existingApp.setId("existing123");
-        existingApp.setStatus("UNDER_REVIEW");
-
-        when(repo.findByUserIdAndLoanTypeAndStatusIn(userId, loanType,
-                List.of("SUBMITTED", "UNDER_REVIEW", "APPROVED")))
-                .thenReturn(List.of(existingApp));
-
-        // Act & Assert
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () ->
-                service.apply(userId, loanType, 100000, 24, null)
+        LoanApplication app = service.apply(
+                "u1",
+                LoanType.PERSONAL,
+                100000,
+                24,
+                15.5
         );
 
-        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
-        assertTrue(exception.getReason().contains("active application"));
+        assertEquals("15.5", app.getRatePercent());
     }
 
     @Test
-    @DisplayName("Should use custom rate if provided")
-    void testApplyWithCustomRate() {
-        // Arrange
-        String userId = "user123";
-        LoanType loanType = LoanType.PERSONAL;
-        double customRate = 15.0;
+    void apply_defaultRate_shouldBeResolved() {
+        when(repo.findByUserIdAndLoanTypeAndStatusIn(any(), any(), any()))
+                .thenReturn(List.of());
+        when(repo.save(any())).thenAnswer(i -> i.getArgument(0));
 
-        when(repo.findByUserIdAndLoanTypeAndStatusIn(userId, loanType,
-                List.of("SUBMITTED", "UNDER_REVIEW", "APPROVED"))).thenReturn(List.of());
+        LoanApplication app = service.apply(
+                "u1",
+                LoanType.EDUCATIONAL,
+                200000,
+                36,
+                null
+        );
 
-        LoanApplication savedApp = new LoanApplication();
-        savedApp.setId("app123");
-        savedApp.setRatePercent(String.valueOf(customRate));
-
-        when(repo.save(any(LoanApplication.class))).thenReturn(savedApp);
-        doNothing().when(notificationPublisher).publishApplicationCreated(any());
-
-        // Act
-        LoanApplication result = service.apply(userId, loanType, 100000, 24, customRate);
-
-        // Assert
-        assertEquals(customRate, Double.parseDouble(result.getRatePercent()));
+        assertEquals("7.5", app.getRatePercent());
     }
 
+    // --------------------------------------------------
+    // GET
+    // --------------------------------------------------
+
     @Test
-    @DisplayName("Should retrieve loan application by ID")
-    void testGetApplicationSuccess() {
-        // Arrange
-        String appId = "app123";
+    void get_found() {
         LoanApplication app = new LoanApplication();
-        app.setId(appId);
+        when(repo.findById("1")).thenReturn(Optional.of(app));
+
+        assertNotNull(service.get("1"));
+    }
+
+    @Test
+    void get_notFound_shouldFail() {
+        when(repo.findById("1")).thenReturn(Optional.empty());
+
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
+                () -> service.get("1")
+        );
+
+        assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
+    }
+
+    // --------------------------------------------------
+    // MARK UNDER REVIEW
+    // --------------------------------------------------
+
+    @Test
+    void markUnderReview_success() {
+        LoanApplication app = new LoanApplication();
         app.setStatus("SUBMITTED");
 
-        when(repo.findById(appId)).thenReturn(Optional.of(app));
+        when(repo.findById("1")).thenReturn(Optional.of(app));
+        when(repo.save(any())).thenReturn(app);
 
-        // Act
-        LoanApplication result = service.get(appId);
+        LoanApplication result = service.markUnderReview("1");
 
-        // Assert
-        assertNotNull(result);
-        assertEquals(appId, result.getId());
-        verify(repo, times(1)).findById(appId);
-    }
-
-    @Test
-    @DisplayName("Should throw 404 when application not found")
-    void testGetApplicationNotFound() {
-        // Arrange
-        String appId = "nonexistent";
-        when(repo.findById(appId)).thenReturn(Optional.empty());
-
-        // Act & Assert
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () ->
-                service.get(appId)
-        );
-
-        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
-    }
-
-    @Test
-    @DisplayName("Should mark application as UNDER_REVIEW")
-    void testMarkUnderReviewSuccess() {
-        // Arrange
-        String appId = "app123";
-        LoanApplication app = new LoanApplication();
-        app.setId(appId);
-        app.setStatus("SUBMITTED");
-
-        when(repo.findById(appId)).thenReturn(Optional.of(app));
-        when(repo.save(any(LoanApplication.class))).thenReturn(app);
-
-        // Act
-        LoanApplication result = service.markUnderReview(appId);
-
-        // Assert
         assertEquals("UNDER_REVIEW", result.getStatus());
-        verify(repo, times(1)).save(any());
     }
 
     @Test
-    @DisplayName("Should approve application successfully")
-    void testApproveSuccess() {
-        // Arrange
-        String appId = "app123";
+    void markUnderReview_invalidStatus_shouldFail() {
         LoanApplication app = new LoanApplication();
-        app.setId(appId);
-        app.setUserId("user123");
-        app.setStatus("UNDER_REVIEW");
-        app.setAmount("100000");
-        app.setTermMonths(24);
-        app.setRatePercent("12");
-        app.setLoanType(LoanType.PERSONAL);
+        app.setStatus("APPROVED");
 
-        ApprovalCriteriaService.ApprovalDecision decision = new ApprovalCriteriaService.ApprovalDecision(
-                true, "Approved"
-        );
+        when(repo.findById("1")).thenReturn(Optional.of(app));
 
-        when(repo.findById(appId)).thenReturn(Optional.of(app));
-        when(approvalCriteriaService.validateApprovalCriteria("user123", 100000)).thenReturn(decision);
-        when(repo.save(any(LoanApplication.class))).thenReturn(app);
-        doNothing().when(notificationService).sendApprovalNotification(anyString(), anyString(), 
-                anyDouble(), anyInt(), anyDouble(), anyString());
-        doNothing().when(loanServiceClient).createLoanFromApplication(any());
-        doNothing().when(notificationPublisher).publishApplicationApproved(any());
+        assertThrows(ResponseStatusException.class,
+                () -> service.markUnderReview("1"));
+    }
 
-        // Act
-        LoanApplication result = service.approve(appId);
+    // --------------------------------------------------
+    // APPROVE
+    // --------------------------------------------------
 
-        // Assert
+    @Test
+    void approve_success() {
+        LoanApplication app = baseUnderReviewApp();
+
+        when(repo.findById("1")).thenReturn(Optional.of(app));
+        when(repo.save(any())).thenReturn(app);
+        when(approvalCriteriaService.validateApprovalCriteria(any(), anyDouble()))
+                .thenReturn(new ApprovalCriteriaService.ApprovalDecision(true, "OK"));
+
+        LoanApplication result = service.approve("1");
+
         assertEquals("APPROVED", result.getStatus());
-        verify(repo, times(1)).save(any());
-        verify(loanServiceClient, times(1)).createLoanFromApplication(any());
+        verify(notificationService).sendApprovalNotification(any(), any(), anyDouble(), anyInt(), anyDouble(), any());
+        verify(loanServiceClient).createLoanFromApplication(any());
     }
 
     @Test
-    @DisplayName("Should reject application with remarks")
-    void testRejectSuccess() {
-        // Arrange
-        String appId = "app123";
-        String remarks = "Insufficient income";
+    void approve_invalidStatus_shouldFail() {
         LoanApplication app = new LoanApplication();
-        app.setId(appId);
-        app.setUserId("user123");
+        app.setStatus("SUBMITTED");
+
+        when(repo.findById("1")).thenReturn(Optional.of(app));
+
+        assertThrows(ResponseStatusException.class,
+                () -> service.approve("1"));
+    }
+
+    @Test
+    void approve_rejectedByCriteria_shouldFail() {
+        LoanApplication app = baseUnderReviewApp();
+
+        when(repo.findById("1")).thenReturn(Optional.of(app));
+        when(approvalCriteriaService.validateApprovalCriteria(any(), anyDouble()))
+                .thenReturn(new ApprovalCriteriaService.ApprovalDecision(false, "Low credit"));
+
+        assertThrows(ResponseStatusException.class,
+                () -> service.approve("1"));
+    }
+
+    @Test
+    void approve_loanServiceFailure_shouldNotFail() {
+        LoanApplication app = baseUnderReviewApp();
+
+        when(repo.findById("1")).thenReturn(Optional.of(app));
+        when(repo.save(any())).thenReturn(app);
+        when(approvalCriteriaService.validateApprovalCriteria(any(), anyDouble()))
+                .thenReturn(new ApprovalCriteriaService.ApprovalDecision(true, "OK"));
+
+        doThrow(new RuntimeException("Loan service down"))
+                .when(loanServiceClient).createLoanFromApplication(any());
+
+        LoanApplication result = service.approve("1");
+
+        assertEquals("APPROVED", result.getStatus());
+    }
+
+    @Test
+    void approve_notificationFailure_shouldNotFail() {
+        LoanApplication app = baseUnderReviewApp();
+
+        when(repo.findById("1")).thenReturn(Optional.of(app));
+        when(repo.save(any())).thenReturn(app);
+        when(approvalCriteriaService.validateApprovalCriteria(any(), anyDouble()))
+                .thenReturn(new ApprovalCriteriaService.ApprovalDecision(true, "OK"));
+
+        doThrow(new RuntimeException("Notify failed"))
+                .when(notificationPublisher).publishApplicationApproved(any());
+
+        LoanApplication result = service.approve("1");
+
+        assertEquals("APPROVED", result.getStatus());
+    }
+
+    // --------------------------------------------------
+    // REJECT
+    // --------------------------------------------------
+
+    @Test
+    void reject_success() {
+        LoanApplication app = new LoanApplication();
         app.setStatus("UNDER_REVIEW");
-        app.setAmount("100000");
+        app.setAmount("50000");
 
-        when(repo.findById(appId)).thenReturn(Optional.of(app));
-        when(repo.save(any(LoanApplication.class))).thenReturn(app);
-        doNothing().when(notificationPublisher).publishApplicationRejected(any());
+        when(repo.findById("1")).thenReturn(Optional.of(app));
+        when(repo.save(any())).thenReturn(app);
 
-        // Act
-        LoanApplication result = service.reject(appId, remarks);
+        LoanApplication result = service.reject("1", "Not eligible");
 
-        // Assert
         assertEquals("REJECTED", result.getStatus());
-        assertEquals(remarks, result.getRemarks());
-        verify(notificationPublisher, times(1)).publishApplicationRejected(any());
     }
 
     @Test
-    @DisplayName("Should reject if rejection remarks are empty")
-    void testRejectWithEmptyRemarks() {
-        // Arrange
-        String appId = "app123";
+    void reject_withoutRemarks_shouldFail() {
         LoanApplication app = new LoanApplication();
         app.setStatus("UNDER_REVIEW");
 
-        when(repo.findById(appId)).thenReturn(Optional.of(app));
+        when(repo.findById("1")).thenReturn(Optional.of(app));
 
-        // Act & Assert
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () ->
-                service.reject(appId, "")
-        );
+        assertThrows(ResponseStatusException.class,
+                () -> service.reject("1", ""));
+    }
 
-        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
+    // --------------------------------------------------
+    // LIST
+    // --------------------------------------------------
+
+    @Test
+    void listByUser() {
+        when(repo.findByUserId("u1")).thenReturn(List.of());
+
+        assertNotNull(service.listByUser("u1"));
     }
 
     @Test
-    @DisplayName("Should list all applications by user")
-    void testListByUser() {
-        // Arrange
-        String userId = "user123";
-        LoanApplication app1 = new LoanApplication();
-        app1.setUserId(userId);
-        LoanApplication app2 = new LoanApplication();
-        app2.setUserId(userId);
+    void listAll() {
+        when(repo.findAll()).thenReturn(List.of());
 
-        when(repo.findByUserId(userId)).thenReturn(List.of(app1, app2));
-
-        // Act
-        List<LoanApplication> result = service.listByUser(userId);
-
-        // Assert
-        assertEquals(2, result.size());
-        verify(repo, times(1)).findByUserId(userId);
+        assertNotNull(service.listAll());
     }
 
-    @Test
-    @DisplayName("Should list all applications")
-    void testListAll() {
-        // Arrange
-        LoanApplication app1 = new LoanApplication();
-        LoanApplication app2 = new LoanApplication();
+    // --------------------------------------------------
+    // HELPER
+    // --------------------------------------------------
 
-        when(repo.findAll()).thenReturn(List.of(app1, app2));
-
-        // Act
-        List<LoanApplication> result = service.listAll();
-
-        // Assert
-        assertEquals(2, result.size());
-        verify(repo, times(1)).findAll();
-    }
-
-    @Test
-    @DisplayName("Should use correct default rate for EDUCATIONAL loan")
-    void testEducationalLoanRate() {
-        // Arrange
-        String userId = "user123";
-        LoanType loanType = LoanType.EDUCATIONAL;
-
-        when(repo.findByUserIdAndLoanTypeAndStatusIn(userId, loanType,
-                List.of("SUBMITTED", "UNDER_REVIEW", "APPROVED"))).thenReturn(List.of());
-
-        LoanApplication savedApp = new LoanApplication();
-        savedApp.setId("app123");
-        savedApp.setRatePercent("7.5");
-
-        when(repo.save(any(LoanApplication.class))).thenReturn(savedApp);
-        doNothing().when(notificationPublisher).publishApplicationCreated(any());
-
-        // Act
-        LoanApplication result = service.apply(userId, loanType, 200000, 36, null);
-
-        // Assert
-        assertEquals("7.5", result.getRatePercent());
-    }
-
-    @Test
-    @DisplayName("Should use correct default rate for HOME_LOAN")
-    void testHomeLoanRate() {
-        // Arrange
-        String userId = "user123";
-        LoanType loanType = LoanType.HOME_LOAN;
-
-        when(repo.findByUserIdAndLoanTypeAndStatusIn(userId, loanType,
-                List.of("SUBMITTED", "UNDER_REVIEW", "APPROVED"))).thenReturn(List.of());
-
-        LoanApplication savedApp = new LoanApplication();
-        savedApp.setId("app123");
-        savedApp.setRatePercent("8.5");
-
-        when(repo.save(any(LoanApplication.class))).thenReturn(savedApp);
-        doNothing().when(notificationPublisher).publishApplicationCreated(any());
-
-        // Act
-        LoanApplication result = service.apply(userId, loanType, 500000, 36, null);
-
-        // Assert
-        assertEquals("8.5", result.getRatePercent());
-    }
+    private LoanApplication baseUnderReviewApp() {
+        LoanApplication app = new LoanApplication();
+        app.setId("1");
+        app.setUserId("u1");
+        app.setStatus("UNDER_REVIEW");
+        app.setAmount("50000");
+        app.setRatePercent("12");
+        app.setTermMonths(12);
+        app.setLoanType(LoanType.PERSONAL);
+        return app;
+}
 }

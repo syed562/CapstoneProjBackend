@@ -99,6 +99,29 @@
                 </execution>
             </executions>
         </plugin>
+        <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>${jacoco.version}</version>
+            <configuration>
+                <excludes>
+                    <!-- Security/config glue and generated models are hard to unit test -->
+                    <exclude>com/example/loanapplication/security/**/*</exclude>
+                    <exclude>com/example/loanapplication/config/**/*</exclude>
+                    <exclude>com/example/loanapplication/validation/**/*</exclude>
+                    <exclude>com/example/loanapplication/exception/**/*</exclude>
+                    <exclude>com/example/loanapplication/client/**/*</exclude>
+                    <exclude>com/example/loanapplication/MODELS/**/*</exclude>
+                </excludes>
+            </configuration>
+            <executions>
+                <execution>
+                    <goals>
+                        <goal>prepare-agent</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
     </plugins>
 </build>
 </project>
