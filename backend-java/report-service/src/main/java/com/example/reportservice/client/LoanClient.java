@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.List;
 
-@FeignClient(name = "loan-service", url = "${loan-service.url}")
+@FeignClient(name = "loan-service", url = "${loan-service.url}", fallback = LoanClientFallback.class)
 public interface LoanClient {
     @GetMapping("/api/loans")
     List<LoanDTO> getAllLoans();
