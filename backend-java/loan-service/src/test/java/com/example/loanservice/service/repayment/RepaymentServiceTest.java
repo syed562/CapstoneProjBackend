@@ -1,5 +1,4 @@
 package com.example.loanservice.repayment;
-
 import com.example.loanservice.domain.Loan;
 import com.example.loanservice.domain.LoanRepository;
 import com.example.loanservice.emi.EMISchedule;
@@ -173,4 +172,5 @@ class RepaymentServiceTest {
 
         assertEquals(1, count);
     }
+
 }
