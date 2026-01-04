@@ -50,7 +50,8 @@ services:
     networks:
       - microservices-network
     environment:
-      - SPRING_PROFILES_ACTIVE=default
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
       interval: 10s
@@ -72,8 +73,9 @@ services:
       eureka-server:
         condition: service_healthy
     environment:
-      - SPRING_PROFILES_ACTIVE=default
+      - SPRING_PROFILES_ACTIVE=docker
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
       interval: 10s
@@ -99,7 +101,7 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      - SPRING_PROFILES_ACTIVE=default
+      - SPRING_PROFILES_ACTIVE=docker
       - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/loans_db
@@ -125,7 +127,7 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      - SPRING_PROFILES_ACTIVE=default
+      - SPRING_PROFILES_ACTIVE=docker
       - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/loans_db
@@ -153,7 +155,7 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
-      - SPRING_PROFILES_ACTIVE=default
+      - SPRING_PROFILES_ACTIVE=docker
       - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/loans_db
@@ -185,7 +187,7 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
-      - SPRING_PROFILES_ACTIVE=default
+      - SPRING_PROFILES_ACTIVE=docker
       - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/loans_db
@@ -213,7 +215,7 @@ services:
       eureka-server:
         condition: service_healthy
     environment:
-      - SPRING_PROFILES_ACTIVE=default
+      - SPRING_PROFILES_ACTIVE=docker
       - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
     restart: on-failure
@@ -236,7 +238,7 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
-      - SPRING_PROFILES_ACTIVE=default
+      - SPRING_PROFILES_ACTIVE=docker
       - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - SPRING_RABBITMQ_HOST=rabbitmq
@@ -273,7 +275,7 @@ services:
       notification-service:
         condition: service_started
     environment:
-      - SPRING_PROFILES_ACTIVE=default
+      - SPRING_PROFILES_ACTIVE=docker
       - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
     restart: on-failure

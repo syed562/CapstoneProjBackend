@@ -11,40 +11,40 @@ public class GatewayConfig {
     @Bean
     public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
         return builder.routes()
-                // Auth Service Routes
+                // Auth Service Routes - using load balancer for service discovery
                 .route("auth-service", r -> r
                         .path("/api/auth/**")
-                        .uri("http://localhost:8083"))
+                        .uri("lb://AUTH-SERVICE"))
 
                 // User Management Routes (Auth Service)
                 .route("user-management", r -> r
                         .path("/api/users/**")
-                        .uri("http://localhost:8083"))
+                        .uri("lb://AUTH-SERVICE"))
 
                 // Profile Service Routes
                 .route("profile-service", r -> r
                         .path("/api/profiles/**")
-                        .uri("http://localhost:8082"))
+                        .uri("lb://PROFILE-SERVICE"))
 
                 // Loan Application Service Routes
                 .route("loan-application-service", r -> r
                         .path("/api/loan-applications/**")
-                        .uri("http://localhost:8084"))
+                        .uri("lb://LOAN-APPLICATION-SERVICE"))
 
                 // Loan Service Routes
                 .route("loan-service", r -> r
                         .path("/api/loans/**")
-                        .uri("http://localhost:8085"))
+                        .uri("lb://LOAN-SERVICE"))
 
                 // Payment Service Routes (part of loan-service)
                 .route("payment-service", r -> r
                         .path("/api/payments/**")
-                        .uri("http://localhost:8085"))
+                        .uri("lb://LOAN-SERVICE"))
 
                 // Report Service Routes
                 .route("report-service", r -> r
                         .path("/api/reports/**")
-                        .uri("http://localhost:8087"))
+                        .uri("lb://REPORT-SERVICE"))
 
                 .build();
     }
