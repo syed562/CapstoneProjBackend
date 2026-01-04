@@ -11,41 +11,47 @@ public class GatewayConfig {
     @Bean
     public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
         return builder.routes()
-                // Auth Service Routes - using load balancer for service discovery
+                // Auth Service routes
                 .route("auth-service", r -> r
                         .path("/api/auth/**")
-                        .uri("lb://AUTH-SERVICE"))
-
-                // User Management Routes (Auth Service)
-                .route("user-management", r -> r
+                        .uri("lb://auth-service"))
+                
+                // User routes (also handled by auth-service)
+                .route("user-service", r -> r
                         .path("/api/users/**")
-                        .uri("lb://AUTH-SERVICE"))
-
-                // Profile Service Routes
-                .route("profile-service", r -> r
-                        .path("/api/profiles/**")
-                        .uri("lb://PROFILE-SERVICE"))
-
-                // Loan Application Service Routes
-                .route("loan-application-service", r -> r
-                        .path("/api/loan-applications/**")
-                        .uri("lb://LOAN-APPLICATION-SERVICE"))
-
-                // Loan Service Routes
+                        .uri("lb://auth-service"))
+                
+                // Loan Service routes
                 .route("loan-service", r -> r
                         .path("/api/loans/**")
-                        .uri("lb://LOAN-SERVICE"))
-
-                // Payment Service Routes (part of loan-service)
+                        .uri("lb://loan-service"))
+                
+                // Payment routes (also handled by loan-service)
                 .route("payment-service", r -> r
                         .path("/api/payments/**")
-                        .uri("lb://LOAN-SERVICE"))
-
-                // Report Service Routes
+                        .uri("lb://loan-service"))
+                
+                // Loan Application Service routes
+                .route("loan-application-service", r -> r
+                        .path("/api/loan-applications/**")
+                        .uri("lb://loan-application-service"))
+                
+                // Profile Service routes
+                .route("profile-service", r -> r
+                        .path("/api/profiles/**")
+                        .uri("lb://profile-service"))
+                
+                // Notification Service routes
+                .route("notification-service", r -> r
+                        .path("/api/notifications/**")
+                        .uri("lb://notification-service"))
+                
+                // Report Service routes
                 .route("report-service", r -> r
                         .path("/api/reports/**")
-                        .uri("lb://REPORT-SERVICE"))
-
+                        .uri("lb://report-service"))
+                
                 .build();
     }
 }
+
