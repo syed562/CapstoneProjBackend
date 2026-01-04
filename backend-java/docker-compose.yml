@@ -39,26 +39,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # Config Server - Must start first
-  config-server:
-    build:
-      context: ./config-server
-      dockerfile: Dockerfile
-    container_name: config-server
-    ports:
-      - "8888:8888"
-    networks:
-      - microservices-network
-    environment:
-      - SPRING_PROFILES_ACTIVE=default
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 40s
-
-  # Eureka Server - Starts after config-server
+  # Eureka Server - Must start first
   eureka-server:
     build:
       context: ./eureka-server
@@ -68,13 +49,33 @@ services:
       - "8761:8761"
     networks:
       - microservices-network
-    depends_on:
-      config-server:
-        condition: service_healthy
     environment:
       - SPRING_PROFILES_ACTIVE=default
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+
+  # Config Server - Starts after eureka (config is an eureka client)
+  config-server:
+    build:
+      context: ./config-server
+      dockerfile: Dockerfile
+    container_name: config-server
+    ports:
+      - "8888:8888"
+    networks:
+      - microservices-network
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+    environment:
+      - SPRING_PROFILES_ACTIVE=default
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
       interval: 10s
       timeout: 5s
       retries: 10
