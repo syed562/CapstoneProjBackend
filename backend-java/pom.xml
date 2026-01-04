@@ -19,9 +19,10 @@
         <jacoco.version>0.8.11</jacoco.version>
         <sonar.version>4.0.0.4121</sonar.version>
         
-        <!-- SonarQube Configuration -->
-        <sonar.host.url>http://localhost:9000</sonar.host.url>
-        <sonar.projectKey>capstone-backend</sonar.projectKey>
+        <!-- SonarCloud Configuration -->
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+        <sonar.organization>syed562</sonar.organization>
+        <sonar.projectKey>syed562_CapstoneProjBackend</sonar.projectKey>
         <sonar.projectName>Capstone Backend Microservices</sonar.projectName>
         <sonar.sources>src/main/java</sonar.sources>
         <sonar.tests>src/test/java</sonar.tests>

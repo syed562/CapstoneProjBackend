@@ -9,10 +9,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.util.Base64;
 
-/**
- * Utility for AES encryption/decryption of sensitive data fields.
- * Uses AES-256 in ECB mode with Base64 encoding for storage.
- */
+
 @Component
 public class EncryptionUtil {
     private final SecretKey secretKey;
