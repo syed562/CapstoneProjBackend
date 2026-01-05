@@ -57,22 +57,22 @@ export class LoanOfficerDashboardComponent implements OnInit {
   }
 
   navigateToPendingApplications() {
-    this.router.navigate(['/officer/applications'], { queryParams: { status: 'PENDING' } });
+    this.router.navigate(['/loans/applications'], { queryParams: { status: 'PENDING' } });
   }
 
   navigateToAllApplications() {
-    this.router.navigate(['/officer/applications']);
+    this.router.navigate(['/loans/applications']);
   }
 
   navigateToReports() {
-    this.router.navigate(['/officer/reports']);
+    this.router.navigate(['/reports']);
   }
 
   navigateToRepayments() {
-    this.router.navigate(['/officer/repayments']);
+    this.router.navigate(['/loans/my-loans']);
   }
 
   viewApplication(applicationId: string) {
-    this.router.navigate(['/officer/applications', applicationId]);
+    this.router.navigate(['/loans', applicationId]);
   }
 }

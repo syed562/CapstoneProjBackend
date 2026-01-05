@@ -39,6 +39,11 @@ public class LoanController {
         return loans.listByUser(userId);
     }
 
+    @GetMapping("/user/{userId}")
+    public List<Loan> getUserLoans(@PathVariable("userId") String userId) {
+        return loans.listByUser(userId);
+    }
+
     @GetMapping("/filter")
     public List<Loan> filterLoans(
             @RequestParam(name = "status", required = false) String status,

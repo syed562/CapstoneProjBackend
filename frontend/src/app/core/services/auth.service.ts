@@ -30,6 +30,27 @@ export class AuthService {
     return this.currentUserSubject.value;
   }
 
+  // 🎯 GET ROLE-BASED REDIRECT PATH
+  public getRedirectPath(): string {
+    const user = this.currentUserValue;
+    
+    if (!user) {
+      return '/auth/login';
+    }
+
+    // Admin and Loan Officer skip profile completion
+    if (user.role === 'ADMIN') {
+      return '/admin';
+    }
+    
+    if (user.role === 'LOAN_OFFICER') {
+      return '/officer';
+    }
+
+    // Customer goes to profile completion first
+    return '/complete-profile';
+  }
+
   // 🔐 LOGIN (JWT FROM RESPONSE BODY)
   login(credentials: LoginRequest): Observable<any> {
     return this.http.post<any>(

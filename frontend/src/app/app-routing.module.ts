@@ -4,6 +4,7 @@ import { authGuard } from './core/guards/auth.guard';
 import { adminGuard } from './core/guards/admin.guard';
 import { customerGuard } from './core/guards/customer.guard';
 import { loanOfficerGuard } from './core/guards/loan-officer.guard';
+import { profileCompletionGuard } from './core/guards/profile-completion.guard';
 import { CompleteProfileComponent } from './features/profile/complete-profile.component';
 import { ViewProfileComponent } from './features/profile/view-profile.component';
 
@@ -15,7 +16,7 @@ const routes: Routes = [
   },
   {
     path: 'complete-profile',
-    canActivate: [authGuard],
+    canActivate: [authGuard, profileCompletionGuard],
     component: CompleteProfileComponent
   },
   {

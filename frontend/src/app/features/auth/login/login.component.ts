@@ -66,21 +66,31 @@ export class LoginComponent implements OnInit {
     this.loading = true;
     this.authService.login(this.loginForm.value).subscribe({
       next: () => {
-        // Check if profile is completed
         const currentUser = this.authService.currentUserValue;
-        if (currentUser?.userId) {
-          this.profileService.getProfile(currentUser.userId).subscribe({
-            next: (profile) => {
-              // Profile exists, go to dashboard
-              this.router.navigate(['/dashboard']);
-            },
-            error: () => {
-              // Profile doesn't exist, redirect to complete profile
-              this.router.navigate(['/complete-profile']);
-            }
-          });
+
+        // Role-based routing
+        if (currentUser?.role === 'ADMIN') {
+          // Admin goes directly to admin dashboard
+          this.router.navigate(['/admin']);
+        } else if (currentUser?.role === 'LOAN_OFFICER') {
+          // Loan Officer goes directly to their dashboard
+          this.router.navigate(['/officer']);
         } else {
-          this.router.navigate(['/dashboard']);
+          // Customer needs to complete profile first
+          if (currentUser?.userId) {
+            this.profileService.getProfile(currentUser.userId).subscribe({
+              next: (profile) => {
+                // Profile exists, go to dashboard
+                this.router.navigate(['/dashboard']);
+              },
+              error: () => {
+                // Profile doesn't exist, redirect to complete profile
+                this.router.navigate(['/complete-profile']);
+              }
+            });
+          } else {
+            this.router.navigate(['/dashboard']);
+          }
         }
       },
       error: (err) => {

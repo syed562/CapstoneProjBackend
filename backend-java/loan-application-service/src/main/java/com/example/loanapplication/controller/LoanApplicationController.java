@@ -17,7 +17,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/loan-applications")
-@CrossOrigin
 public class LoanApplicationController {
     private final LoanApplicationService apps;
 
@@ -48,6 +47,12 @@ public class LoanApplicationController {
     @GetMapping("/my")
     @PreAuthorize("hasRole('CUSTOMER') or hasRole('ADMIN')")
     public ResponseEntity<List<LoanApplication>> my(@RequestParam("userId") String userId) {
+        return ResponseEntity.ok(apps.listByUser(userId));
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<LoanApplication>> getUserApplications(@PathVariable("userId") String userId) {
+        System.out.println("[LOAN-APP-CONTROLLER] Fetching applications for userId: " + userId);
         return ResponseEntity.ok(apps.listByUser(userId));
     }
 

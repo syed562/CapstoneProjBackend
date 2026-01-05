@@ -61,19 +61,19 @@ export class CustomerDashboardComponent implements OnInit {
   }
 
   navigateToApplyLoan() {
-    this.router.navigate(['/customer/apply-loan']);
+    this.router.navigate(['/loans/apply']);
   }
 
   navigateToMyApplications() {
-    this.router.navigate(['/customer/my-loans'], { queryParams: { tab: 'applications' } });
+    this.router.navigate(['/loans/applications']);
   }
 
   navigateToMyLoans() {
-    this.router.navigate(['/customer/my-loans']);
+    this.router.navigate(['/loans/my-loans']);
   }
 
   navigateToEMI() {
-    this.router.navigate(['/customer/emi-tracker']);
+    this.router.navigate(['/emi']);
   }
 
   navigateToViewProfile() {
