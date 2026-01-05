@@ -63,8 +63,7 @@ public class LoanApplicationService {
     }
 
     public LoanApplication apply(String userId, LoanType loanType, double amount, int termMonths, Double ratePercent) {
-        // TODO: Re-enable profile existence check once Feign integration is stable
-        // ensureProfileExists(userId);
+        ensureProfileExists(userId);
         if (amount < minAmount || amount > maxAmount) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Amount must be between " + minAmount + " and " + maxAmount);
         }
@@ -272,19 +271,16 @@ public class LoanApplicationService {
             ProfileView profile = profileServiceClient.getProfile(userId);
             System.out.println("[LOAN-APP] Profile found: " + profile);
             if (profile == null) {
-                System.out.println("[LOAN-APP] WARNING: Profile is null for userId: " + userId + ", allowing application anyway");
-                return;
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Profile not found. Please create your profile before applying for a loan.");
             }
         } catch (FeignException.NotFound e) {
-            System.out.println("[LOAN-APP] Profile not found (404): " + userId + ", error: " + e.getMessage() + ", allowing application anyway");
-            return;
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Profile not found. Please create your profile before applying for a loan.");
         } catch (FeignException e) {
-            System.out.println("[LOAN-APP] Feign error calling profile-service: " + e.getClass().getName() + ", status: " + e.status() + ", message: " + e.getMessage() + ", allowing application anyway");
-            return;
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Unable to verify profile at this time. Please try again later.");
         } catch (Exception e) {
-            System.out.println("[LOAN-APP] Unexpected error: " + e.getClass().getName() + ", message: " + e.getMessage() + ", allowing application anyway");
+            System.out.println("[LOAN-APP] Unexpected error: " + e.getClass().getName() + ", message: " + e.getMessage());
             e.printStackTrace();
-            return;
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error while verifying profile. Please try again.");
         }
     }
 

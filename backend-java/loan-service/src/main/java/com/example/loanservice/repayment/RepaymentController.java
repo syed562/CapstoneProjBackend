@@ -10,7 +10,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/loans/{loanId}/repayments")
-@CrossOrigin
 public class RepaymentController {
     private final RepaymentService repaymentService;
 

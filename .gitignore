@@ -1,21 +1,21 @@
-# Maven
-target/
+# Node / Angular
+node_modules/
+**/node_modules/
+dist/
+.angular/
 
-# Eclipse / STS
-.metadata/
-.project
-.classpath
-.settings/
-
-# SonarLint
-.sonarlint/
-
-# Logs
+# OS / Editor files
 *.log
+*.tmp
+*.swp
+*.swo
+*.DS_Store
+*.LCK*
+*~
 
-# OS
-.DS_Store
-Thumbs.db
+# Java
+target/
+*.class
 
 # Docker
-*.env
+.env
