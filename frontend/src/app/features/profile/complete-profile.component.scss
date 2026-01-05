@@ -1,0 +1,51 @@
+.complete-profile-container {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+mat-card {
+  margin-top: 20px;
+}
+
+.full-width {
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+.half-width {
+  width: 48%;
+  margin-bottom: 15px;
+}
+
+.form-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.button-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  justify-content: flex-end;
+}
+
+mat-card-title {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+mat-card-subtitle {
+  color: #666;
+  margin-bottom: 20px;
+}
+
+mat-card-actions {
+  padding: 16px;
+  text-align: center;
+}
+
+mat-stepper {
+  background: transparent;
+}

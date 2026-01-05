@@ -1,0 +1,124 @@
+<div class="dashboard-container">
+  <div class="welcome-section">
+    <h1>Loan Officer Dashboard</h1>
+    <p>Welcome, {{ currentUser?.firstName || currentUser?.username }}! Manage loan applications and approvals</p>
+  </div>
+
+  <div class="stats-grid">
+    <!-- Pending Applications -->
+    <mat-card class="stat-card pending-card">
+      <mat-card-header>
+        <mat-icon>hourglass_empty</mat-icon>
+        <mat-card-title>Pending Applications</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="stat-number">{{ pendingApplicationsCount }}</div>
+        <p>Awaiting review</p>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-raised-button color="warn" (click)="navigateToPendingApplications()">
+          Review Now
+        </button>
+      </mat-card-actions>
+    </mat-card>
+
+    <!-- Approved Applications -->
+    <mat-card class="stat-card approved-card">
+      <mat-card-header>
+        <mat-icon>check_circle</mat-icon>
+        <mat-card-title>Approved</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="stat-number">{{ approvedApplicationsCount }}</div>
+        <p>Total approved loans</p>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Rejected Applications -->
+    <mat-card class="stat-card rejected-card">
+      <mat-card-header>
+        <mat-icon>cancel</mat-icon>
+        <mat-card-title>Rejected</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="stat-number">{{ rejectedApplicationsCount }}</div>
+        <p>Total rejected</p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div class="actions-section">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Quick Actions</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="action-buttons">
+          <button mat-raised-button color="primary" (click)="navigateToAllApplications()">
+            <mat-icon>list</mat-icon>
+            View All Applications
+          </button>
+          <button mat-raised-button (click)="navigateToPendingApplications()">
+            <mat-icon>pending_actions</mat-icon>
+            Pending Reviews
+          </button>
+          <button mat-raised-button (click)="navigateToRepayments()">
+            <mat-icon>payment</mat-icon>
+            Monitor Repayments
+          </button>
+          <button mat-raised-button (click)="navigateToReports()">
+            <mat-icon>assessment</mat-icon>
+            View Reports
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div class="recent-applications" *ngIf="recentApplications.length > 0">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Recent Applications</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <table mat-table [dataSource]="recentApplications" class="applications-table">
+          <ng-container matColumnDef="id">
+            <th mat-header-cell *matHeaderCellDef>Application ID</th>
+            <td mat-cell *matCellDef="let app">{{ app.id }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="userId">
+            <th mat-header-cell *matHeaderCellDef>User ID</th>
+            <td mat-cell *matCellDef="let app">{{ app.userId }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="amount">
+            <th mat-header-cell *matHeaderCellDef>Amount</th>
+            <td mat-cell *matCellDef="let app">₹{{ app.amount | number }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <td mat-cell *matCellDef="let app">
+              <span [class]="'status-badge ' + app.status.toLowerCase()">
+                {{ app.status }}
+              </span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let app">
+              <button mat-button color="primary" (click)="viewApplication(app.id)">
+                View
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="['id', 'userId', 'amount', 'status', 'actions']"></tr>
+          <tr mat-row *matRowDef="let row; columns: ['id', 'userId', 'amount', 'status', 'actions'];"></tr>
+        </table>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

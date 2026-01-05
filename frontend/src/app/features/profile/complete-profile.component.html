@@ -1,0 +1,179 @@
+<div class="complete-profile-container">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Complete Your Profile</mat-card-title>
+      <mat-card-subtitle>Please provide your information to get started</mat-card-subtitle>
+    </mat-card-header>
+    
+    <mat-card-content>
+      <mat-stepper linear #stepper>
+        <!-- Step 1: Personal Information -->
+        <mat-step [stepControl]="personalInfoForm">
+          <form [formGroup]="personalInfoForm">
+            <ng-template matStepLabel>Personal Information</ng-template>
+            
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>First Name</mat-label>
+                <input matInput formControlName="firstName" required>
+                <mat-error *ngIf="personalInfoForm.get('firstName')?.hasError('required')">
+                  First name is required
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Last Name</mat-label>
+                <input matInput formControlName="lastName" required>
+                <mat-error *ngIf="personalInfoForm.get('lastName')?.hasError('required')">
+                  Last name is required
+                </mat-error>
+              </mat-form-field>
+            </div>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Email</mat-label>
+              <input matInput type="email" formControlName="email" required>
+              <mat-error *ngIf="personalInfoForm.get('email')?.hasError('required')">
+                Email is required
+              </mat-error>
+              <mat-error *ngIf="personalInfoForm.get('email')?.hasError('email')">
+                Please enter a valid email
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Phone Number</mat-label>
+              <input matInput formControlName="phone" placeholder="10 digit number" required>
+              <mat-error *ngIf="personalInfoForm.get('phone')?.hasError('required')">
+                Phone number is required
+              </mat-error>
+              <mat-error *ngIf="personalInfoForm.get('phone')?.hasError('pattern')">
+                Please enter a valid 10-digit phone number
+              </mat-error>
+            </mat-form-field>
+
+            <div class="button-row">
+              <button mat-raised-button color="primary" matStepperNext>Next</button>
+            </div>
+          </form>
+        </mat-step>
+
+        <!-- Step 2: Address -->
+        <mat-step [stepControl]="addressForm">
+          <form [formGroup]="addressForm">
+            <ng-template matStepLabel>Address</ng-template>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Address Line 1</mat-label>
+              <input matInput formControlName="addressLine1" required>
+              <mat-error *ngIf="addressForm.get('addressLine1')?.hasError('required')">
+                Address is required
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Address Line 2 (Optional)</mat-label>
+              <input matInput formControlName="addressLine2">
+            </mat-form-field>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>City</mat-label>
+                <input matInput formControlName="city" required>
+                <mat-error *ngIf="addressForm.get('city')?.hasError('required')">
+                  City is required
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>State</mat-label>
+                <input matInput formControlName="state" required>
+                <mat-error *ngIf="addressForm.get('state')?.hasError('required')">
+                  State is required
+                </mat-error>
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Postal Code</mat-label>
+                <input matInput formControlName="postalCode" placeholder="6 digit PIN" required>
+                <mat-error *ngIf="addressForm.get('postalCode')?.hasError('required')">
+                  Postal code is required
+                </mat-error>
+                <mat-error *ngIf="addressForm.get('postalCode')?.hasError('pattern')">
+                  Please enter a valid 6-digit PIN code
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Country</mat-label>
+                <input matInput formControlName="country" required>
+                <mat-error *ngIf="addressForm.get('country')?.hasError('required')">
+                  Country is required
+                </mat-error>
+              </mat-form-field>
+            </div>
+
+            <div class="button-row">
+              <button mat-button matStepperPrevious>Back</button>
+              <button mat-raised-button color="primary" matStepperNext>Next</button>
+            </div>
+          </form>
+        </mat-step>
+
+        <!-- Step 3: Financial Information -->
+        <mat-step [stepControl]="financialForm">
+          <form [formGroup]="financialForm">
+            <ng-template matStepLabel>Financial Information</ng-template>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Annual Income (₹)</mat-label>
+              <input matInput type="number" formControlName="annualIncome" required>
+              <mat-error *ngIf="financialForm.get('annualIncome')?.hasError('required')">
+                Annual income is required
+              </mat-error>
+              <mat-error *ngIf="financialForm.get('annualIncome')?.hasError('min')">
+                Annual income must be positive
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Credit Score (Optional)</mat-label>
+              <input matInput type="number" formControlName="creditScore" placeholder="300-900">
+              <mat-hint>If you know your credit score</mat-hint>
+              <mat-error *ngIf="financialForm.get('creditScore')?.hasError('min')">
+                Credit score must be at least 300
+              </mat-error>
+              <mat-error *ngIf="financialForm.get('creditScore')?.hasError('max')">
+                Credit score cannot exceed 900
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Total Liabilities (₹) (Optional)</mat-label>
+              <input matInput type="number" formControlName="totalLiabilities" placeholder="Existing loans, debts">
+              <mat-hint>Sum of all existing loans and debts</mat-hint>
+              <mat-error *ngIf="financialForm.get('totalLiabilities')?.hasError('min')">
+                Total liabilities cannot be negative
+              </mat-error>
+            </mat-form-field>
+
+            <div class="button-row">
+              <button mat-button matStepperPrevious>Back</button>
+              <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="loading">
+                {{ loading ? 'Saving...' : 'Complete Profile' }}
+              </button>
+            </div>
+          </form>
+        </mat-step>
+      </mat-stepper>
+    </mat-card-content>
+
+    <mat-card-actions>
+      <button mat-button (click)="skipForNow()" [disabled]="loading">
+        Skip for now
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</div>

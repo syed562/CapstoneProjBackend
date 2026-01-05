@@ -1,0 +1,93 @@
+<div class="dashboard-container">
+  <div class="welcome-section">
+    <h1>Admin Dashboard</h1>
+    <p>Welcome, {{ currentUser?.firstName || currentUser?.username }}! Manage system configuration and control</p>
+  </div>
+
+  <div class="dashboard-grid">
+    <!-- Manage Users Card -->
+    <mat-card class="dashboard-card">
+      <mat-card-header>
+        <mat-icon>people</mat-icon>
+        <mat-card-title>Manage Users</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <p>Manage Admin, Loan Officer, and Customer accounts</p>
+        <p class="feature-list">
+          • Create/Edit/Delete users<br>
+          • Assign roles<br>
+          • View user activity
+        </p>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-raised-button color="primary" (click)="navigateToUsers()">
+          Manage Users
+        </button>
+      </mat-card-actions>
+    </mat-card>
+
+    <!-- Loan Configuration Card -->
+    <mat-card class="dashboard-card">
+      <mat-card-header>
+        <mat-icon>settings</mat-icon>
+        <mat-card-title>Loan Rules</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <p>Configure loan types and rules</p>
+        <p class="feature-list">
+          • Set loan types (Home, Personal, Auto)<br>
+          • Define interest rates<br>
+          • Configure tenure rules
+        </p>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-raised-button color="primary" (click)="navigateToLoanRules()">
+          Configure Rules
+        </button>
+      </mat-card-actions>
+    </mat-card>
+
+    <!-- System Reports Card -->
+    <mat-card class="dashboard-card">
+      <mat-card-header>
+        <mat-icon>assessment</mat-icon>
+        <mat-card-title>System Reports</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <p>View comprehensive system analytics</p>
+        <p class="feature-list">
+          • Application statistics<br>
+          • Loan disbursement reports<br>
+          • User activity logs
+        </p>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-raised-button color="primary" (click)="navigateToReports()">
+          View Reports
+        </button>
+      </mat-card-actions>
+    </mat-card>
+
+    <!-- All Applications Card -->
+    <mat-card class="dashboard-card">
+      <mat-card-header>
+        <mat-icon>assignment</mat-icon>
+        <mat-card-title>Applications</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <p>Monitor all loan applications</p>
+        <p class="feature-list">
+          • View all applications<br>
+          • Monitor approvals/rejections<br>
+          • System-wide overview
+        </p>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-raised-button color="primary" (click)="navigateToApplications()">
+          View Applications
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>
+

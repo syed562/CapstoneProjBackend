@@ -1,0 +1,109 @@
+<div class="view-profile-container">
+  <mat-card class="profile-card">
+    <mat-card-header>
+      <mat-card-title>My Profile</mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- Loading State -->
+      <div *ngIf="loading" class="loading-state">
+        <p>Loading profile...</p>
+      </div>
+
+      <!-- Error State -->
+      <div *ngIf="error && !loading" class="error-state">
+        <p class="error-message">{{ error }}</p>
+      </div>
+
+      <!-- Profile Content -->
+      <div *ngIf="profile && !loading" class="profile-content">
+        <!-- Personal Info -->
+        <div class="section">
+          <h3>Personal Information</h3>
+          <mat-divider></mat-divider>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>First Name:</label>
+              <p>{{ profile.firstName }}</p>
+            </div>
+            <div class="info-item">
+              <label>Last Name:</label>
+              <p>{{ profile.lastName }}</p>
+            </div>
+            <div class="info-item">
+              <label>Email:</label>
+              <p>{{ profile.email }}</p>
+            </div>
+            <div class="info-item">
+              <label>Phone:</label>
+              <p>{{ profile.phone }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Address Info -->
+        <div class="section">
+          <h3>Address Information</h3>
+          <mat-divider></mat-divider>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Address Line 1:</label>
+              <p>{{ profile.addressLine1 }}</p>
+            </div>
+            <div class="info-item">
+              <label>Address Line 2:</label>
+              <p>{{ profile.addressLine2 || 'N/A' }}</p>
+            </div>
+            <div class="info-item">
+              <label>City:</label>
+              <p>{{ profile.city }}</p>
+            </div>
+            <div class="info-item">
+              <label>State:</label>
+              <p>{{ profile.state }}</p>
+            </div>
+            <div class="info-item">
+              <label>Postal Code:</label>
+              <p>{{ profile.postalCode }}</p>
+            </div>
+            <div class="info-item">
+              <label>Country:</label>
+              <p>{{ profile.country }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Financial Info -->
+        <div class="section">
+          <h3>Financial Information</h3>
+          <mat-divider></mat-divider>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Credit Score:</label>
+              <p>{{ profile.creditScore || 'Not provided' }}</p>
+            </div>
+            <div class="info-item">
+              <label>Annual Income:</label>
+              <p>{{ profile.annualIncome || 'Not provided' }}</p>
+            </div>
+            <div class="info-item">
+              <label>Total Liabilities:</label>
+              <p>{{ profile.totalLiabilities || 'Not provided' }}</p>
+            </div>
+            <div class="info-item">
+              <label>KYC Status:</label>
+              <p [ngClass]="'status-' + (profile.kycStatus || 'PENDING')">
+                {{ profile.kycStatus || 'PENDING' }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+
+    <mat-card-actions align="end">
+      <button mat-button (click)="goBack()">Back</button>
+      <button mat-raised-button color="primary" (click)="editProfile()">Edit Profile</button>
+    </mat-card-actions>
+  </mat-card>
+</div>

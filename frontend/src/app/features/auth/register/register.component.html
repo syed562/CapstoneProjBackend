@@ -1,0 +1,158 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="logo-section">
+        <div class="logo-circle">
+          <mat-icon>account_balance</mat-icon>
+        </div>
+        <h1>Loan Management</h1>
+      </div>
+      <h2>Create Your Account</h2>
+      <p class="subtitle">Join us to manage your loans efficiently</p>
+    </div>
+
+    <div class="auth-body">
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+        <div class="alert alert-danger" *ngIf="error" role="alert">
+          <mat-icon>error_outline</mat-icon>
+          {{ error }}
+        </div>
+
+        <div class="alert alert-success" *ngIf="success" role="alert">
+          <mat-icon>check_circle_outline</mat-icon>
+          {{ success }}
+        </div>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Username</mat-label>
+          <input
+            matInput
+            formControlName="username"
+            type="text"
+            placeholder="Choose a username"
+            [class.is-invalid]="submitted && f['username'].errors"
+          />
+          <mat-icon matPrefix>person</mat-icon>
+          <mat-error *ngIf="submitted && f['username']?.hasError('required')">
+            Username is required
+          </mat-error>
+          <mat-error *ngIf="submitted && f['username']?.hasError('minlength')">
+            Username must be at least 3 characters
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email Address</mat-label>
+          <input
+            matInput
+            formControlName="email"
+            type="email"
+            placeholder="your.email@example.com"
+            [class.is-invalid]="submitted && f['email'].errors"
+          />
+          <mat-icon matPrefix>email</mat-icon>
+          <mat-error *ngIf="submitted && f['email']?.hasError('required')">
+            Email is required
+          </mat-error>
+          <mat-error *ngIf="submitted && f['email']?.hasError('email')">
+            Please enter a valid email address
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Password</mat-label>
+          <input
+            matInput
+            formControlName="password"
+            [type]="showPassword ? 'text' : 'password'"
+            placeholder="Create a strong password"
+            [class.is-invalid]="submitted && f['password'].errors"
+          />
+          <mat-icon matPrefix>lock</mat-icon>
+          <button mat-icon-button matSuffix type="button" (click)="togglePasswordVisibility()">
+            <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          <mat-error *ngIf="submitted && f['password']?.hasError('required')">
+            Password is required
+          </mat-error>
+          <mat-error *ngIf="submitted && f['password']?.hasError('minlength')">
+            Password must be at least 8 characters
+          </mat-error>
+          <mat-error *ngIf="submitted && f['password']?.hasError('passwordPolicy')">
+            Password must include uppercase, lowercase, number, and special character
+          </mat-error>
+        </mat-form-field>
+
+        <div class="password-requirements" *ngIf="!submitted || f['password'].errors">
+          <p class="requirements-title">Password Requirements:</p>
+          <ul>
+            <li [class.met]="registerForm.get('password')?.value?.length >= 8">
+              <mat-icon>{{ registerForm.get('password')?.value?.length >= 8 ? 'check_circle' : 'cancel' }}</mat-icon>
+              At least 8 characters
+            </li>
+            <li [class.met]="hasUpperCase(registerForm.get('password')?.value)">
+              <mat-icon>{{ hasUpperCase(registerForm.get('password')?.value) ? 'check_circle' : 'cancel' }}</mat-icon>
+              One uppercase letter
+            </li>
+            <li [class.met]="hasLowerCase(registerForm.get('password')?.value)">
+              <mat-icon>{{ hasLowerCase(registerForm.get('password')?.value) ? 'check_circle' : 'cancel' }}</mat-icon>
+              One lowercase letter
+            </li>
+            <li [class.met]="hasNumeric(registerForm.get('password')?.value)">
+              <mat-icon>{{ hasNumeric(registerForm.get('password')?.value) ? 'check_circle' : 'cancel' }}</mat-icon>
+              One number
+            </li>
+            <li [class.met]="hasSpecialChar(registerForm.get('password')?.value)">
+              <mat-icon>{{ hasSpecialChar(registerForm.get('password')?.value) ? 'check_circle' : 'cancel' }}</mat-icon>
+              One special character
+            </li>
+          </ul>
+        </div>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Confirm Password</mat-label>
+          <input
+            matInput
+            formControlName="confirmPassword"
+            [type]="showConfirmPassword ? 'text' : 'password'"
+            placeholder="Re-enter your password"
+            [class.is-invalid]="submitted && f['confirmPassword'].errors"
+          />
+          <mat-icon matPrefix>lock_outline</mat-icon>
+          <button mat-icon-button matSuffix type="button" (click)="toggleConfirmPasswordVisibility()">
+            <mat-icon>{{ showConfirmPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          <mat-error *ngIf="submitted && f['confirmPassword'].errors">
+            Please confirm your password
+          </mat-error>
+        </mat-form-field>
+
+        <button
+          mat-raised-button
+          color="primary"
+          type="submit"
+          class="submit-button"
+          [disabled]="loading"
+        >
+          <span *ngIf="!loading">Create Account</span>
+          <span *ngIf="loading">
+            <mat-icon class="spinner">sync</mat-icon>
+            Creating Account...
+          </span>
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        <p>Already have an account? <a routerLink="/auth/login" class="link">Sign In</a></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="auth-illustration">
+    <div class="illustration-content">
+      <mat-icon class="large-icon">security</mat-icon>
+      <h3>Secure & Reliable</h3>
+      <p>Your financial data is protected with industry-standard security measures</p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,82 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="logo-section">
+        <div class="logo-circle">
+          <mat-icon>account_balance</mat-icon>
+        </div>
+        <h1>Loan Management</h1>
+      </div>
+      <h2>Welcome Back</h2>
+      <p class="subtitle">Sign in to access your account</p>
+    </div>
+
+    <div class="auth-body">
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <div class="alert alert-danger" *ngIf="error" role="alert">
+          <mat-icon>error_outline</mat-icon>
+          {{ error }}
+        </div>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Username</mat-label>
+          <input
+            matInput
+            formControlName="username"
+            type="text"
+            placeholder="Enter your username"
+            [class.is-invalid]="submitted && f['username'].errors"
+          />
+          <mat-icon matPrefix>person</mat-icon>
+          <mat-error *ngIf="submitted && f['username'].errors">
+            Username is required
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Password</mat-label>
+          <input
+            matInput
+            formControlName="password"
+            [type]="showPassword ? 'text' : 'password'"
+            placeholder="Enter your password"
+            [class.is-invalid]="submitted && f['password'].errors"
+          />
+          <mat-icon matPrefix>lock</mat-icon>
+          <button mat-icon-button matSuffix type="button" (click)="togglePasswordVisibility()">
+            <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          <mat-error *ngIf="submitted && f['password'].errors">
+            Password is required
+          </mat-error>
+        </mat-form-field>
+
+        <button
+          mat-raised-button
+          color="primary"
+          type="submit"
+          class="submit-button"
+          [disabled]="loading"
+        >
+          <span *ngIf="!loading">Sign In</span>
+          <span *ngIf="loading">
+            <mat-icon class="spinner">sync</mat-icon>
+            Signing in...
+          </span>
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        <p>Don't have an account? <a routerLink="/auth/register" class="link">Create one</a></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="auth-illustration">
+    <div class="illustration-content">
+      <mat-icon class="large-icon">verified_user</mat-icon>
+      <h3>Secure Access</h3>
+      <p>Your loan management journey starts here. Manage applications, track loans, and monitor EMI schedules seamlessly.</p>
+    </div>
+  </div>
+</div>

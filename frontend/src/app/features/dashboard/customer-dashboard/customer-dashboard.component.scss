@@ -1,0 +1,83 @@
+.dashboard-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.welcome-section {
+  margin-bottom: 30px;
+  
+  h1 {
+    font-size: 32px;
+    margin-bottom: 10px;
+    color: #3f51b5;
+  }
+
+  p {
+    font-size: 16px;
+    color: #666;
+  }
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.dashboard-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+  }
+
+  mat-card-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+
+    mat-icon {
+      margin-right: 10px;
+      font-size: 32px;
+      width: 32px;
+      height: 32px;
+      color: #3f51b5;
+    }
+
+    mat-card-title {
+      font-size: 20px;
+    }
+  }
+
+  mat-card-content {
+    min-height: 80px;
+
+    p {
+      color: #666;
+      margin: 10px 0;
+    }
+
+    .stat-number {
+      font-size: 48px;
+      font-weight: bold;
+      color: #3f51b5;
+      margin: 10px 0;
+    }
+  }
+
+  mat-card-actions {
+    padding: 16px;
+  }
+}
+
+.apply-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+
+  mat-card-header mat-icon,
+  mat-card-content p {
+    color: white;
+  }
+}
