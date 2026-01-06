@@ -1,7 +1,5 @@
-version: '3.8'
-
 services:
-  # PostgreSQL Database
+
   postgres:
     image: postgres:15-alpine
     container_name: loans-postgres
@@ -21,28 +19,23 @@ services:
       timeout: 5s
       retries: 5
 
-  # RabbitMQ Message Broker
   rabbitmq:
     image: rabbitmq:3-management-alpine
     container_name: loans-rabbitmq
-    environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
     ports:
       - "5672:5672"
       - "15672:15672"
     networks:
       - microservices-network
     healthcheck:
-      test: rabbitmq-diagnostics -q ping
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # Eureka Server - Must start first
   eureka-server:
     build:
-      context: ./eureka-server
+      context: ./backend-java/eureka-server
       dockerfile: Dockerfile
     container_name: eureka-server
     ports:
@@ -59,10 +52,9 @@ services:
       retries: 10
       start_period: 40s
 
-  # Config Server - Starts after eureka (config is an eureka client)
   config-server:
     build:
-      context: ./config-server
+      context: ./backend-java/config-server
       dockerfile: Dockerfile
     container_name: config-server
     ports:
@@ -83,10 +75,9 @@ services:
       retries: 10
       start_period: 40s
 
-  # Auth Service
   auth-service:
     build:
-      context: ./auth-service
+      context: ./backend-java/auth-service
       dockerfile: Dockerfile
     container_name: auth-service
     networks:
@@ -105,12 +96,10 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/loans_db
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=Sabiha@123
-    restart: on-failure
 
-  # Profile Service
   profile-service:
     build:
-      context: ./profile-service
+      context: ./backend-java/profile-service
       dockerfile: Dockerfile
     container_name: profile-service
     networks:
@@ -129,12 +118,10 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/loans_db
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=Sabiha@123
-    restart: on-failure
 
-  # Loan Service
   loan-service:
     build:
-      context: ./loan-service
+      context: ./backend-java/loan-service
       dockerfile: Dockerfile
     container_name: loan-service
     networks:
@@ -156,15 +143,10 @@ services:
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=Sabiha@123
       - SPRING_RABBITMQ_HOST=rabbitmq
-      - SPRING_RABBITMQ_PORT=5672
-      - SPRING_RABBITMQ_USERNAME=guest
-      - SPRING_RABBITMQ_PASSWORD=guest
-    restart: on-failure
 
-  # Loan Application Service
   loan-application-service:
     build:
-      context: ./loan-application-service
+      context: ./backend-java/loan-application-service
       dockerfile: Dockerfile
     container_name: loan-application-service
     networks:
@@ -186,15 +168,10 @@ services:
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=Sabiha@123
       - SPRING_RABBITMQ_HOST=rabbitmq
-      - SPRING_RABBITMQ_PORT=5672
-      - SPRING_RABBITMQ_USERNAME=guest
-      - SPRING_RABBITMQ_PASSWORD=guest
-    restart: on-failure
 
-  # Report Service
   report-service:
     build:
-      context: ./report-service
+      context: ./backend-java/report-service
       dockerfile: Dockerfile
     container_name: report-service
     networks:
@@ -208,12 +185,10 @@ services:
       - SPRING_PROFILES_ACTIVE=docker
       - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
-    restart: on-failure
 
-  # Notification Service
   notification-service:
     build:
-      context: ./notification-service
+      context: ./backend-java/notification-service
       dockerfile: Dockerfile
     container_name: notification-service
     networks:
@@ -230,15 +205,10 @@ services:
       - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - SPRING_RABBITMQ_HOST=rabbitmq
-      - SPRING_RABBITMQ_PORT=5672
-      - SPRING_RABBITMQ_USERNAME=guest
-      - SPRING_RABBITMQ_PASSWORD=guest
-    restart: on-failure
 
-  # API Gateway - Starts last
   api-gateway:
     build:
-      context: ./api-gateway
+      context: ./backend-java/api-gateway
       dockerfile: Dockerfile
     container_name: api-gateway
     ports:
@@ -246,27 +216,10 @@ services:
     networks:
       - microservices-network
     depends_on:
-      config-server:
-        condition: service_healthy
       eureka-server:
         condition: service_healthy
-      auth-service:
-        condition: service_started
-      profile-service:
-        condition: service_started
-      loan-service:
-        condition: service_started
-      loan-application-service:
-        condition: service_started
-      report-service:
-        condition: service_started
-      notification-service:
-        condition: service_started
-    environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
-    restart: on-failure
+      config-server:
+        condition: service_healthy
 
 networks:
   microservices-network:
