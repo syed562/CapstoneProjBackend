@@ -87,7 +87,7 @@ backend-java/
 - Comprehensive endpoint documentation
 
 ---
-
+Config server url : https://github.com/syed562/ConfigServerForCapstone
 ## 🚀 Quick Commands
 
 ### Build All Services
