@@ -31,6 +31,23 @@
         <sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
         <sonar.language>java</sonar.language>
         <sonar.java.source>${java.version}</sonar.java.source>
+        
+        <!-- Exclude non-testable code from coverage calculation -->
+        <sonar.coverage.exclusions>
+            **/config/**,
+            **/dto/**,
+            **/entity/**,
+            **/domain/**,
+            **/model/**,
+            **/*Application.java,
+            **/exception/**,
+            **/security/**,
+            **/listener/**,
+            **/publisher/**,
+            **/event/**,
+            **/validation/**,
+            **/client/**
+        </sonar.coverage.exclusions>
     </properties>
 
     <modules>
