@@ -1,1 +1,75 @@
-<p>reports-dashboard works!</p>
+<div class="reports-dashboard">
+	<h2>Reports</h2>
+
+	<div *ngIf="loading">Loading reports...</div>
+	<div *ngIf="error" class="error">{{ error }}</div>
+
+	<div *ngIf="!loading && !error">
+		<section class="cards">
+			<div class="card">
+				<div class="label">Total Applications</div>
+				<div class="value">{{ comprehensive?.applications?.total || 0 }}</div>
+				<div class="sub">Pending: {{ comprehensive?.applications?.pending || 0 }}</div>
+			</div>
+			<div class="card">
+				<div class="label">Approved Applications</div>
+				<div class="value">{{ comprehensive?.applications?.approved || 0 }}</div>
+				<div class="sub">Rejected: {{ comprehensive?.applications?.rejected || 0 }}</div>
+			</div>
+			<div class="card">
+				<div class="label">Total Loans</div>
+				<div class="value">{{ loanStatus?.totalLoans || 0 }}</div>
+				<div class="sub">Active: {{ loanStatus?.activeLoanCount || 0 }} | Closed: {{ loanStatus?.closedLoanCount || 0 }}</div>
+			</div>
+			<div class="card">
+				<div class="label">Conversion Rate</div>
+				<div class="value">{{ (comprehensive?.overall?.applicationToLoanConversionRate || 0) | percent:'1.0-1' }}</div>
+				<div class="sub">Avg Loan: {{ comprehensive?.overall?.averageLoanAmount || 0 | number:'1.0-0' }}</div>
+			</div>
+		</section>
+
+		<section class="cards">
+			<div class="card small">
+				<div class="label">Pending</div>
+				<div class="value">{{ getStatusCount('PENDING') }}</div>
+			</div>
+			<div class="card small">
+				<div class="label">Under Review</div>
+				<div class="value">{{ getStatusCount('UNDER_REVIEW') }}</div>
+			</div>
+			<div class="card small">
+				<div class="label">Approved</div>
+				<div class="value">{{ getStatusCount('APPROVED') }}</div>
+			</div>
+			<div class="card small">
+				<div class="label">Rejected</div>
+				<div class="value">{{ getStatusCount('REJECTED') }}</div>
+			</div>
+		</section>
+
+		<section class="table-section">
+			<h3>Customer Loan Summary</h3>
+			<table *ngIf="customerSummary.length" class="summary-table">
+				<thead>
+					<tr>
+						<th>User ID</th>
+						<th>Total Loans</th>
+						<th>Total Amount</th>
+						<th>Active Loans</th>
+						<th>Outstanding</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr *ngFor="let c of customerSummary">
+						<td>{{ c.userId }}</td>
+						<td>{{ c.totalLoans }}</td>
+						<td>{{ c.totalLoanAmount | number:'1.0-0' }}</td>
+						<td>{{ c.activeLoans }}</td>
+						<td>{{ c.outstandingAmount | number:'1.0-0' }}</td>
+					</tr>
+				</tbody>
+			</table>
+			<div *ngIf="!customerSummary.length" class="empty">No customer summary available.</div>
+		</section>
+	</div>
+</div>

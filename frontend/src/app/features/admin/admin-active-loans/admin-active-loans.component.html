@@ -1,0 +1,33 @@
+<div class="admin-active-loans">
+  <h2>Active Loans</h2>
+
+  <div *ngIf="loading">Loading loans...</div>
+  <div *ngIf="error" class="error">{{ error }}</div>
+
+  <table *ngIf="!loading && loans.length" class="loan-table">
+    <thead>
+      <tr>
+        <th>User ID</th>
+        <th>Type</th>
+        <th>Amount</th>
+        <th>Term (months)</th>
+        <th>Rate (%)</th>
+        <th>Status</th>
+        <th>Created</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let loan of loans">
+        <td>{{ loan.userId }}</td>
+        <td>{{ loan.loanType }}</td>
+        <td>{{ loan.amount | number:'1.0-0' }}</td>
+        <td>{{ loan.termMonths }}</td>
+        <td>{{ loan.ratePercent }}</td>
+        <td>{{ loan.status }}</td>
+        <td>{{ loan.createdAt }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div *ngIf="!loading && !loans.length" class="empty">No active loans found.</div>
+</div>

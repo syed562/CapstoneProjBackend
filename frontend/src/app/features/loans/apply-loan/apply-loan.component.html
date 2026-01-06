@@ -4,6 +4,15 @@
       <mat-card-title>Apply for Loan</mat-card-title>
     </mat-card-header>
     <mat-card-content>
+      <div class="alert alert-danger" *ngIf="error">
+        <mat-icon>error</mat-icon>
+        {{ error }}
+      </div>
+      <div class="alert alert-success" *ngIf="success">
+        <mat-icon>check_circle</mat-icon>
+        {{ success }}
+      </div>
+
       <form [formGroup]="loanForm" (ngSubmit)="onSubmit()">
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Loan Type</mat-label>
@@ -29,32 +38,29 @@
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Tenure (Years)</mat-label>
-          <input matInput type="number" formControlName="tenure" placeholder="Enter tenure in years" required>
-          <mat-error *ngIf="loanForm.get('tenure')?.hasError('required')">
+          <mat-label>Tenure (Months)</mat-label>
+          <input matInput type="number" formControlName="termMonths" placeholder="Enter tenure in months" required>
+          <mat-error *ngIf="loanForm.get('termMonths')?.hasError('required')">
             Tenure is required
           </mat-error>
-          <mat-error *ngIf="loanForm.get('tenure')?.hasError('min')">
-            Minimum tenure is 1 year
+          <mat-error *ngIf="loanForm.get('termMonths')?.hasError('min')">
+            Minimum tenure is 6 months
           </mat-error>
-          <mat-error *ngIf="loanForm.get('tenure')?.hasError('max')">
-            Maximum tenure is 30 years
+          <mat-error *ngIf="loanForm.get('termMonths')?.hasError('max')">
+            Maximum tenure is 360 months (30 years)
           </mat-error>
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Purpose</mat-label>
-          <textarea matInput formControlName="purpose" rows="4" placeholder="Enter loan purpose" required></textarea>
-          <mat-error *ngIf="loanForm.get('purpose')?.hasError('required')">
-            Purpose is required
-          </mat-error>
+          <mat-label>Interest Rate (%) - Optional</mat-label>
+          <input matInput type="number" formControlName="ratePercent" placeholder="Enter interest rate" step="0.01">
         </mat-form-field>
 
         <div class="button-row">
           <button mat-raised-button color="primary" type="submit" [disabled]="loading || loanForm.invalid">
             {{ loading ? 'Submitting...' : 'Submit Application' }}
           </button>
-          <button mat-button type="button" routerLink="/dashboard">
+          <button mat-button type="button" routerLink="/loans">
             Cancel
           </button>
         </div>

@@ -1,1 +1,55 @@
-<p>loan-applications works!</p>
+<div class="loan-applications">
+  <h2>Loan Applications</h2>
+
+  <div *ngIf="loading">Loading applications...</div>
+  <div *ngIf="error" class="error">{{ error }}</div>
+
+  <div *ngIf="!loading && !error && applications.length === 0">
+    No applications found.
+  </div>
+
+  <table *ngIf="!loading && !error && applications.length > 0" class="app-table">
+    <thead>
+      <tr>
+        <th *ngIf="isAdminOrOfficer()">Applicant</th>
+        <th>Type</th>
+        <th>Amount</th>
+        <th>Term (months)</th>
+        <th>Status</th>
+        <th *ngIf="isAdminOrOfficer()">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let app of applications">
+        <td *ngIf="isAdminOrOfficer()">{{ app.userName || 'Unknown' }}</td>
+        <td>{{ app.loanType }}</td>
+        <td>{{ app.amount | number:'1.0-0' }}</td>
+        <td>{{ app.termMonths }}</td>
+        <td>{{ app.status }}</td>
+        <td *ngIf="isAdminOrOfficer()">
+          <button 
+            *ngIf="app.status === 'SUBMITTED'"
+            (click)="moveToReview(app)" 
+            [disabled]="app.actionInProgress"
+            class="btn-approve">
+            {{ app.actionInProgress ? 'Processing...' : 'Start Review' }}
+          </button>
+          <button 
+            *ngIf="app.status !== 'APPROVED' && app.status !== 'REJECTED'"
+            (click)="approve(app)" 
+            [disabled]="app.actionInProgress"
+            class="btn-approve">
+            {{ app.actionInProgress ? 'Processing...' : 'Approve' }}
+          </button>
+          <button 
+            *ngIf="app.status !== 'APPROVED' && app.status !== 'REJECTED'"
+            (click)="reject(app)" 
+            [disabled]="app.actionInProgress"
+            class="btn-reject">
+            {{ app.actionInProgress ? 'Processing...' : 'Reject' }}
+          </button>
+          <span *ngIf="app.status === 'APPROVED' || app.status === 'REJECTED'">—</span>
+        </td>
+		</tbody>
+	</table>
+</div>

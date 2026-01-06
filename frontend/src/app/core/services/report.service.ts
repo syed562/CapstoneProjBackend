@@ -15,10 +15,8 @@ export class ReportService {
     private errorHandler: ErrorHandlerService
   ) {}
 
-  getOverallReport(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/overall`, {
-      withCredentials: false
-    }).pipe(
+  getLoanStatus(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/loan-status`).pipe(
       catchError(error => {
         this.errorHandler.handleError(error);
         throw error;
@@ -26,10 +24,8 @@ export class ReportService {
     );
   }
 
-  getUserReport(userId: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/user/${userId}`, {
-      withCredentials: false
-    }).pipe(
+  getCustomerSummary(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/customer-summary`).pipe(
       catchError(error => {
         this.errorHandler.handleError(error);
         throw error;
@@ -37,10 +33,8 @@ export class ReportService {
     );
   }
 
-  getLoanApplicationsReport(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/applications`, {
-      withCredentials: false
-    }).pipe(
+  getDashboard(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/dashboard`).pipe(
       catchError(error => {
         this.errorHandler.handleError(error);
         throw error;
@@ -48,21 +42,8 @@ export class ReportService {
     );
   }
 
-  getLoansReport(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/loans`, {
-      withCredentials: false
-    }).pipe(
-      catchError(error => {
-        this.errorHandler.handleError(error);
-        throw error;
-      })
-    );
-  }
-
-  getRevenueReport(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/revenue`, {
-      withCredentials: false
-    }).pipe(
+  getComprehensive(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/comprehensive`).pipe(
       catchError(error => {
         this.errorHandler.handleError(error);
         throw error;

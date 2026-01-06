@@ -39,6 +39,9 @@
           <mat-error *ngIf="submitted && f['username']?.hasError('minlength')">
             Username must be at least 3 characters
           </mat-error>
+          <mat-error *ngIf="submitted && f['username']?.hasError('maxlength')">
+            Username cannot exceed 50 characters
+          </mat-error>
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="full-width">
@@ -56,6 +59,42 @@
           </mat-error>
           <mat-error *ngIf="submitted && f['email']?.hasError('email')">
             Please enter a valid email address
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>First Name</mat-label>
+          <input
+            matInput
+            formControlName="firstName"
+            type="text"
+            placeholder="Your first name"
+            [class.is-invalid]="submitted && f['firstName'].errors"
+          />
+          <mat-icon matPrefix>person_outline</mat-icon>
+          <mat-error *ngIf="submitted && f['firstName']?.hasError('required')">
+            First name is required
+          </mat-error>
+          <mat-error *ngIf="submitted && f['firstName']?.hasError('maxlength')">
+            First name cannot exceed 50 characters
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Last Name</mat-label>
+          <input
+            matInput
+            formControlName="lastName"
+            type="text"
+            placeholder="Your last name"
+            [class.is-invalid]="submitted && f['lastName'].errors"
+          />
+          <mat-icon matPrefix>person_outline</mat-icon>
+          <mat-error *ngIf="submitted && f['lastName']?.hasError('required')">
+            Last name is required
+          </mat-error>
+          <mat-error *ngIf="submitted && f['lastName']?.hasError('maxlength')">
+            Last name cannot exceed 50 characters
           </mat-error>
         </mat-form-field>
 

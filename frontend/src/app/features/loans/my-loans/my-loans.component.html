@@ -1,1 +1,31 @@
-<p>my-loans works!</p>
+<div class="my-loans">
+	<h2>My Loans</h2>
+
+	<div *ngIf="loading">Loading your loans...</div>
+	<div *ngIf="error" class="error">{{ error }}</div>
+
+	<div *ngIf="!loading && !error && loans.length === 0">
+		You have no loans yet.
+	</div>
+
+	<table *ngIf="!loading && !error && loans.length > 0" class="loan-table">
+		<thead>
+			<tr>
+				<th>Type</th>
+				<th>Amount</th>
+				<th>Term (months)</th>
+				<th>Rate (%)</th>
+				<th>Status</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr *ngFor="let loan of loans">
+				<td>{{ loan.loanType }}</td>
+				<td>{{ loan.amount | number:'1.0-0' }}</td>
+				<td>{{ loan.termMonths }}</td>
+				<td>{{ loan.ratePercent || '—' }}</td>
+				<td>{{ loan.status }}</td>
+			</tr>
+		</tbody>
+	</table>
+</div>

@@ -6,6 +6,15 @@
     </mat-card-header>
     
     <mat-card-content>
+      <div class="alert alert-danger" *ngIf="error">
+        <mat-icon>error</mat-icon>
+        {{ error }}
+      </div>
+      <div class="alert alert-success" *ngIf="success">
+        <mat-icon>check_circle</mat-icon>
+        {{ success }}
+      </div>
+
       <mat-stepper linear #stepper>
         <!-- Step 1: Personal Information -->
         <mat-step [stepControl]="personalInfoForm">

@@ -1,1 +1,33 @@
-<p>emi-schedule works!</p>
+<div class="emi-schedule">
+	<h2>EMI Schedule</h2>
+
+	<p>Coming soon: select a loan to view the EMI schedule.</p>
+
+	<div *ngIf="loading">Loading schedule...</div>
+	<div *ngIf="error" class="error">{{ error }}</div>
+
+	<table *ngIf="!loading && !error && schedule.length > 0" class="emi-table">
+		<thead>
+			<tr>
+				<th>#</th>
+				<th>Due Date</th>
+				<th>Amount</th>
+				<th>Principal</th>
+				<th>Interest</th>
+				<th>Remaining</th>
+				<th>Status</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr *ngFor="let row of schedule">
+				<td>{{ row.emiNumber }}</td>
+				<td>{{ row.dueDate }}</td>
+				<td>{{ row.amount | number:'1.0-0' }}</td>
+				<td>{{ row.principal | number:'1.0-0' }}</td>
+				<td>{{ row.interest | number:'1.0-0' }}</td>
+				<td>{{ row.remainingBalance | number:'1.0-0' }}</td>
+				<td>{{ row.status }}</td>
+			</tr>
+		</tbody>
+	</table>
+</div>

@@ -28,6 +28,9 @@ import { AuthService } from '../../../core/services/auth.service';
 export class ApplyLoanComponent implements OnInit {
   loanForm!: FormGroup;
   loading = false;
+  error = '';
+  success = '';
+  submitted = false;
   loanTypes = ['PERSONAL', 'HOME', 'AUTO', 'EDUCATIONAL', 'HOME_LOAN'];
 
   constructor(
@@ -39,14 +42,18 @@ export class ApplyLoanComponent implements OnInit {
 
   ngOnInit() {
     this.loanForm = this.fb.group({
-      amount: ['', [Validators.required, Validators.min(1000)]],
-      tenure: ['', [Validators.required, Validators.min(1), Validators.max(30)]],
+      amount: ['', [Validators.required, Validators.min(10000)]],
+      termMonths: ['', [Validators.required, Validators.min(6), Validators.max(360)]],
       loanType: ['', Validators.required],
-      purpose: ['', Validators.required]
+      ratePercent: ['']
     });
   }
 
   onSubmit() {
+    this.submitted = true;
+    this.error = '';
+    this.success = '';
+    
     if (this.loanForm.invalid) {
       return;
     }
@@ -55,26 +62,26 @@ export class ApplyLoanComponent implements OnInit {
     const currentUser = this.authService.currentUserValue;
     
     if (!currentUser?.userId) {
-      alert('Please login first');
-      this.router.navigate(['/login']);
+      this.error = 'Please login first';
+      this.loading = false;
       return;
     }
 
-    const application = {
-      ...this.loanForm.value,
-      userId: currentUser.userId,
-      status: 'PENDING'
-    };
+    // Submit form values directly - they match ApplyRequest DTO
+    const application = this.loanForm.value;
 
     this.loanService.applyForLoan(application).subscribe({
       next: (response) => {
-        alert('Loan application submitted successfully!');
-        this.router.navigate(['/applications']);
+        this.success = 'Loan application submitted successfully!';
+        this.loading = false;
+        setTimeout(() => {
+          this.router.navigate(['/loans/applications']);
+        }, 1500);
       },
       error: (error) => {
-        console.error('Error applying for loan:', error);
-        alert('Failed to submit loan application');
+        this.error = error?.error?.message || error?.message || 'Failed to submit loan application. Please try again.';
         this.loading = false;
+        console.error('Error applying for loan:', error);
       }
     });
   }

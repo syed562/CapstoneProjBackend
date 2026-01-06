@@ -1,0 +1,44 @@
+<div class="admin-users">
+  <h2>User Management</h2>
+
+  <div *ngIf="loading">Loading users...</div>
+  <div *ngIf="error" class="error">{{ error }}</div>
+
+  <table *ngIf="!loading && users.length" class="users-table">
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let user of users">
+        <td>{{ user.username }}</td>
+        <td>{{ user.email }}</td>
+        <td>
+          <select [value]="user.role" (change)="onRoleChange(user, $any($event.target).value)" [disabled]="saving[user.id]">
+            <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
+          </select>
+        </td>
+        <td>
+          <span class="status" [class.active]="user.status === 'ACTIVE'" [class.inactive]="user.status !== 'ACTIVE'">
+            {{ user.status }}
+          </span>
+        </td>
+        <td>
+          <button (click)="toggleStatus(user)" [disabled]="saving[user.id]">
+            {{ user.status === 'ACTIVE' ? 'Deactivate' : 'Activate' }}
+          </button>
+          <button class="danger" (click)="deleteUser(user)" [disabled]="saving[user.id] || (currentUserId && currentUserId === user.id)">
+            Delete
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div *ngIf="!loading && !users.length" class="empty">No users found.</div>
+</div>

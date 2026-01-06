@@ -50,6 +50,16 @@ export interface RegisterRequest {
   lastName: string;
 }
 
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword?: string;
+}
+
+export interface ChangePasswordResponse {
+  message: string;
+}
+
 export interface LoanApplication {
   id: string;
   userId: string;

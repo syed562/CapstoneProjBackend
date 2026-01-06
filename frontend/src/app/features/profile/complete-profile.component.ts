@@ -30,6 +30,9 @@ export class CompleteProfileComponent implements OnInit {
   addressForm!: FormGroup;
   financialForm!: FormGroup;
   loading = false;
+  error = '';
+  success = '';
+  submitted = false;
 
   constructor(
     private fb: FormBuilder,
@@ -72,6 +75,10 @@ export class CompleteProfileComponent implements OnInit {
   }
 
   onSubmit() {
+    this.submitted = true;
+    this.error = '';
+    this.success = '';
+    
     if (this.personalInfoForm.invalid || this.addressForm.invalid || this.financialForm.invalid) {
       return;
     }
@@ -80,7 +87,8 @@ export class CompleteProfileComponent implements OnInit {
     const currentUser = this.authService.currentUserValue;
     
     if (!currentUser?.userId) {
-      alert('Please login first');
+      this.error = 'Please login first';
+      this.loading = false;
       this.router.navigate(['/login']);
       return;
     }
@@ -99,13 +107,16 @@ export class CompleteProfileComponent implements OnInit {
         const updatedUser = { ...currentUser, profileCompleted: true };
         localStorage.setItem('user', JSON.stringify(updatedUser));
         
-        alert('Profile completed successfully!');
-        this.router.navigate(['/dashboard']);
+        this.success = 'Profile completed successfully!';
+        this.loading = false;
+        setTimeout(() => {
+          this.router.navigate(['/dashboard']);
+        }, 1500);
       },
       error: (error) => {
-        console.error('Error creating profile:', error);
-        alert('Failed to create profile. Please try again.');
+        this.error = error?.error?.message || error?.message || 'Failed to create profile. Please try again.';
         this.loading = false;
+        console.error('Error creating profile:', error);
       }
     });
   }

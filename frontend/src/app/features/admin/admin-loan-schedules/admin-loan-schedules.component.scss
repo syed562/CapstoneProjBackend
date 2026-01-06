@@ -1,0 +1,56 @@
+/* Loan schedules and payments */
+.admin-loan-schedules {
+  padding: 16px;
+}
+
+.loan-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.loan-table th,
+.loan-table td {
+  padding: 8px;
+  border-bottom: 1px solid #e0e0e0;
+  text-align: left;
+}
+
+.loan-table th {
+  background: #f5f5f5;
+}
+
+.details {
+  background: #fafafa;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 12px;
+}
+
+.mini-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.mini-table th,
+.mini-table td {
+  padding: 6px;
+  border-bottom: 1px solid #e0e0e0;
+  text-align: left;
+}
+
+.mini-table th {
+  background: #f5f5f5;
+}
+
+.error {
+  color: #c62828;
+  margin-top: 8px;
+}
+
+.empty {
+  margin-top: 8px;
+  color: #777;
+}

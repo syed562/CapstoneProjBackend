@@ -39,7 +39,7 @@ export class LoanService {
   }
 
   getAllApplications(): Observable<LoanApplication[]> {
-    return this.http.get<LoanApplication[]>(`${this.apiUrl}/all`, {
+    return this.http.get<LoanApplication[]>(this.apiUrl, {
       withCredentials: false
     }).pipe(
       catchError(error => {
@@ -71,8 +71,19 @@ export class LoanService {
     );
   }
 
+  markUnderReview(id: string): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${id}/review`, {}, {
+      withCredentials: false
+    }).pipe(
+      catchError(error => {
+        this.errorHandler.handleError(error);
+        throw error;
+      })
+    );
+  }
+
   rejectApplication(id: string, reason: string): Observable<any> {
-    return this.http.put(`${this.apiUrl}/${id}/reject`, { reason }, {
+    return this.http.put(`${this.apiUrl}/${id}/reject`, { remarks: reason }, {
       withCredentials: false
     }).pipe(
       catchError(error => {
@@ -84,6 +95,17 @@ export class LoanService {
 
   getUserLoans(userId: string): Observable<any[]> {
     return this.http.get<any[]>(`${environment.apiUrl}/loans/user/${userId}`, {
+      withCredentials: false
+    }).pipe(
+      catchError(error => {
+        this.errorHandler.handleError(error);
+        throw error;
+      })
+    );
+  }
+
+  getAllLoans(): Observable<any[]> {
+    return this.http.get<any[]>(`${environment.apiUrl}/loans`, {
       withCredentials: false
     }).pipe(
       catchError(error => {
@@ -105,9 +127,16 @@ export class LoanService {
   }
 
   getEMISchedule(loanId: string): Observable<any[]> {
-    return this.http.get<any[]>(`${environment.apiUrl}/loans/${loanId}/emi-schedule`, {
-      withCredentials: false
-    }).pipe(
+    return this.http.get<any[]>(`${environment.apiUrl}/loans/${loanId}/emi-schedule`).pipe(
+      catchError(error => {
+        this.errorHandler.handleError(error);
+        throw error;
+      })
+    );
+  }
+
+  getPaymentsByLoan(loanId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${environment.apiUrl}/payments/loan/${loanId}`).pipe(
       catchError(error => {
         this.errorHandler.handleError(error);
         throw error;

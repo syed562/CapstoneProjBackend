@@ -1,0 +1,99 @@
+<div class="admin-loan-schedules">
+  <h2>Loan Schedules & Payments</h2>
+
+  <div *ngIf="loading">Loading loans...</div>
+  <div *ngIf="error" class="error">{{ error }}</div>
+
+  <table *ngIf="!loading && loans.length" class="loan-table">
+    <thead>
+      <tr>
+        <th></th>
+        <th>User ID</th>
+        <th>Type</th>
+        <th>Amount</th>
+        <th>Term</th>
+        <th>Rate</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <ng-container *ngFor="let loan of loans">
+        <tr>
+          <td>
+            <button (click)="toggleDetails(loan)">
+              {{ loan.expanded ? '–' : '+' }}
+            </button>
+          </td>
+          <td>{{ loan.userId }}</td>
+          <td>{{ loan.loanType }}</td>
+          <td>{{ loan.amount | number:'1.0-0' }}</td>
+          <td>{{ loan.termMonths }}</td>
+          <td>{{ loan.ratePercent }}</td>
+          <td>{{ loan.status }}</td>
+        </tr>
+        <tr *ngIf="loan.expanded">
+          <td colspan="7" class="details">
+            <div *ngIf="loan.loadingDetails">Loading details...</div>
+            <div class="details-grid" *ngIf="!loan.loadingDetails">
+              <div>
+                <h4>EMI Schedule</h4>
+                <table *ngIf="loan.schedule?.length" class="mini-table">
+                  <thead>
+                    <tr>
+                      <th>Month</th>
+                      <th>EMI</th>
+                      <th>Principal</th>
+                      <th>Interest</th>
+                      <th>Outstanding</th>
+                      <th>Status</th>
+                      <th>Due</th>
+                      <th>Paid</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let s of loan.schedule">
+                      <td>{{ s.month }}</td>
+                      <td>{{ s.emiAmount }}</td>
+                      <td>{{ s.principalAmount }}</td>
+                      <td>{{ s.interestAmount }}</td>
+                      <td>{{ s.outstandingBalance }}</td>
+                      <td>{{ s.status }}</td>
+                      <td>{{ s.dueDate }}</td>
+                      <td>{{ s.paidDate || '—' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div *ngIf="!loan.schedule?.length" class="empty">No schedule available.</div>
+              </div>
+
+              <div>
+                <h4>Payments</h4>
+                <table *ngIf="loan.payments?.length" class="mini-table">
+                  <thead>
+                    <tr>
+                      <th>Amount</th>
+                      <th>Method</th>
+                      <th>Txn ID</th>
+                      <th>Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let p of loan.payments">
+                      <td>{{ p.amount }}</td>
+                      <td>{{ p.paymentMethod }}</td>
+                      <td>{{ p.transactionId }}</td>
+                      <td>{{ p.paymentDate }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div *ngIf="!loan.payments?.length" class="empty">No payments recorded.</div>
+              </div>
+            </div>
+          </td>
+        </tr>
+      </ng-container>
+    </tbody>
+  </table>
+
+  <div *ngIf="!loading && !loans.length" class="empty">No loans found.</div>
+</div>

@@ -1,0 +1,96 @@
+<div class="loan-rules-container">
+  <div class="header">
+    <h1>Loan Type Rates Management</h1>
+    <p>Configure interest rates for different loan types</p>
+  </div>
+
+  <div class="content-grid">
+    <!-- Edit Form Card -->
+    <mat-card class="edit-card">
+      <h2>{{ editingType ? 'Edit Rate' : 'Update a Rate' }}</h2>
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Loan Type</mat-label>
+          <mat-select formControlName="loanType" [disabled]="editingType !== null">
+            <mat-option *ngFor="let type of loanTypes" [value]="type">
+              {{ type }}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="f['loanType'].hasError('required')">Loan type is required</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Interest Rate (%)</mat-label>
+          <input matInput type="number" formControlName="rate" step="0.1" min="0.1" max="100" placeholder="e.g., 12.5">
+          <mat-error *ngIf="f['rate'].hasError('required')">Rate is required</mat-error>
+          <mat-error *ngIf="f['rate'].hasError('min')">Rate must be at least 0.1%</mat-error>
+          <mat-error *ngIf="f['rate'].hasError('max')">Rate cannot exceed 100%</mat-error>
+        </mat-form-field>
+
+        <div class="button-group">
+          <button mat-raised-button color="primary" [disabled]="form.invalid || submitting">
+            {{ submitting ? 'Updating...' : 'Update Rate' }}
+          </button>
+          <button mat-stroked-button type="button" (click)="cancelEdit()" *ngIf="editingType">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </mat-card>
+
+    <!-- Rates Table Card -->
+    <mat-card class="rates-card">
+      <h2>Current Rates</h2>
+      <div *ngIf="loading" class="loading-spinner">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Loading rates...</p>
+      </div>
+
+      <div *ngIf="!loading && getRatesList().length > 0" class="table-wrapper">
+        <table mat-table [dataSource]="getRatesList()" class="rates-table">
+          <!-- Loan Type Column -->
+          <ng-container matColumnDef="loanType">
+            <th mat-header-cell *matHeaderCellDef>Loan Type</th>
+            <td mat-cell *matCellDef="let row" class="loan-type">
+              <mat-icon>account_balance</mat-icon>
+              {{ row.key }}
+            </td>
+          </ng-container>
+
+          <!-- Rate Column -->
+          <ng-container matColumnDef="rate">
+            <th mat-header-cell *matHeaderCellDef>Interest Rate</th>
+            <td mat-cell *matCellDef="let row" class="rate">
+              <strong>{{ row.value }}%</strong>
+            </td>
+          </ng-container>
+
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let row">
+              <button mat-icon-button (click)="startEdit(row.key)" [disabled]="editingType !== null && editingType !== row.key">
+                <mat-icon>edit</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+      </div>
+
+      <div *ngIf="!loading && getRatesList().length === 0" class="no-data">
+        <p>No rates configured</p>
+      </div>
+    </mat-card>
+  </div>
+
+  <!-- Reset Button -->
+  <div class="reset-section">
+    <button mat-stroked-button color="warn" (click)="resetToDefaults()" [disabled]="submitting">
+      <mat-icon>refresh</mat-icon>
+      Reset to Defaults
+    </button>
+  </div>
+</div>

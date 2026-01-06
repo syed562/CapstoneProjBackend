@@ -3,6 +3,9 @@ import { CommonModule } from '@angular/common';
 
 import { AdminRoutingModule } from './admin-routing.module';
 import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
+import { AdminUsersComponent } from './admin-users/admin-users.component';
+import { AdminLoanRulesComponent } from './admin-loan-rules/admin-loan-rules.component';
+import { LoanApplicationsComponent } from '../loans/loan-applications/loan-applications.component';
 
 
 @NgModule({
@@ -10,7 +13,10 @@ import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.compo
   imports: [
     CommonModule,
     AdminRoutingModule,
-    AdminDashboardComponent
+    AdminDashboardComponent,
+    AdminUsersComponent,
+    AdminLoanRulesComponent,
+    LoanApplicationsComponent
   ]
 })
 export class AdminModule { }

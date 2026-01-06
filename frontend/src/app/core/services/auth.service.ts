@@ -3,7 +3,7 @@ import { HttpClient, HttpResponse } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap, catchError } from 'rxjs';
 import { Router } from '@angular/router';
 import { environment } from '@environments/environment';
-import { User, LoginRequest, RegisterRequest } from '../models/models';
+import { User, LoginRequest, RegisterRequest, ChangePasswordRequest, ChangePasswordResponse } from '../models/models';
 import { ErrorHandlerService } from './error-handler.service';
 
 @Injectable({
@@ -102,6 +102,23 @@ export class AuthService {
     ).pipe(
       tap(() => {
         this.errorHandler.showSuccess('Registration successful! Please login.');
+      }),
+      catchError((error) => {
+        this.errorHandler.handleError(error);
+        throw error;
+      })
+    );
+  }
+
+  // 🔒 CHANGE PASSWORD
+  changePassword(payload: ChangePasswordRequest): Observable<ChangePasswordResponse> {
+    return this.http.post<ChangePasswordResponse>(
+      `${environment.apiUrl}/auth/change-password`,
+      payload
+    ).pipe(
+      tap((res) => {
+        const message = res?.message || 'Password updated successfully';
+        this.errorHandler.showSuccess(message);
       }),
       catchError((error) => {
         this.errorHandler.handleError(error);

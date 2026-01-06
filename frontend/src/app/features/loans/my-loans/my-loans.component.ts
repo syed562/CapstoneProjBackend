@@ -1,12 +1,63 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { LoanService } from '../../../core/services/loan.service';
+import { AuthService } from '../../../core/services/auth.service';
+
+interface LoanView {
+  id: string;
+  amount: number;
+  termMonths: number;
+  status: string;
+  loanType: string;
+  ratePercent?: number;
+  createdAt?: string;
+}
 
 @Component({
   selector: 'app-my-loans',
   standalone: true,
-  imports: [],
+  imports: [CommonModule],
   templateUrl: './my-loans.component.html',
   styleUrl: './my-loans.component.scss'
 })
-export class MyLoansComponent {
+export class MyLoansComponent implements OnInit {
+  loans: LoanView[] = [];
+  loading = false;
+  error: string | null = null;
 
+  constructor(
+    private loanService: LoanService,
+    private authService: AuthService,
+    private router: Router
+  ) {}
+
+  ngOnInit(): void {
+    const user = this.authService.currentUserValue;
+    if (!user?.userId) {
+      this.router.navigate(['/auth/login']);
+      return;
+    }
+
+    this.loading = true;
+    this.loanService.getUserLoans(user.userId).subscribe({
+      next: (loans) => {
+        this.loans = (loans || []).map((loan: any) => ({
+          id: loan.id,
+          amount: loan.amount,
+          termMonths: loan.termMonths ?? loan.tenure,
+          status: loan.status,
+          loanType: loan.loanType,
+          ratePercent: loan.ratePercent ?? loan.interestRate,
+          createdAt: loan.createdAt ?? loan.startDate
+        }));
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Failed to load loans', err);
+        this.error = 'Could not load your loans right now.';
+        this.loading = false;
+      }
+    });
+  }
 }
