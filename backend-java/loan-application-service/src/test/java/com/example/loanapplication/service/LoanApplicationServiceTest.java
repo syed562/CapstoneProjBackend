@@ -4,6 +4,7 @@ import com.example.loanapplication.MODELS.LoanApplication;
 import com.example.loanapplication.MODELS.LoanType;
 import com.example.loanapplication.client.LoanServiceClient;
 import com.example.loanapplication.client.ProfileServiceClient;
+import com.example.loanapplication.client.UserServiceClient;
 import com.example.loanapplication.repository.LoanApplicationRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -38,7 +39,13 @@ class LoanApplicationServiceTest {
     private LoanServiceClient loanServiceClient;
 
     @Mock
+    private UserServiceClient userServiceClient;
+
+    @Mock
     private NotificationPublisher notificationPublisher;
+
+    @Mock
+    private RateConfigService rateConfigService;
 
     private LoanApplicationService service;
 
@@ -51,7 +58,9 @@ class LoanApplicationServiceTest {
                 notificationService,
                 profileServiceClient,
                 loanServiceClient,
+                userServiceClient,
                 notificationPublisher,
+                rateConfigService,
                 5000,
                 2000000,
                 "12,24,36",
@@ -144,6 +153,8 @@ class LoanApplicationServiceTest {
         when(repo.findByUserIdAndLoanTypeAndStatusIn(any(), any(), any()))
                 .thenReturn(List.of());
         when(repo.save(any())).thenAnswer(i -> i.getArgument(0));
+        when(rateConfigService.getRate("EDUCATIONAL"))
+                .thenReturn(7.5);
 
         LoanApplication app = service.apply(
                 "u1",
@@ -231,7 +242,15 @@ class LoanApplicationServiceTest {
     @Test
     void approve_invalidStatus_shouldFail() {
         LoanApplication app = new LoanApplication();
-        app.setStatus("SUBMITTED");
+        app.setId("1");
+        app.setUserId("u1");
+        app.setStatus("REJECTED");  // Invalid status for approval
+        app.setAmount("50000");
+        app.setRatePercent("12");
+        app.setTermMonths(12);
+        app.setLoanType(LoanType.PERSONAL);
+        app.setCreatedAt("2024-01-01");
+        app.setUpdatedAt("2024-01-01");
 
         when(repo.findById("1")).thenReturn(Optional.of(app));
 

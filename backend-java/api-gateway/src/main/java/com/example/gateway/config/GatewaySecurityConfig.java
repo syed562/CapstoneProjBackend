@@ -51,7 +51,8 @@ public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http)
             "/api/loan-applications/**",
             "/api/payments/**",
             "/api/loans/**",
-            "/api/reports/**"
+            "/api/reports/**",
+            "/api/rates/**"
         )
     );
 
@@ -63,6 +64,9 @@ public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http)
             .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
             .pathMatchers("/api/auth/**", "/api/users/**").permitAll()
             .pathMatchers(HttpMethod.GET, "/api/profiles/**").permitAll()
+            // Allow Swagger UI and API docs endpoints
+            .pathMatchers("/swagger-ui.html", "/swagger-ui/**", "/webjars/**").permitAll()
+            .pathMatchers("/*/api-docs", "/*/swagger-ui.html", "/*/swagger-ui/**").permitAll()
             .anyExchange().authenticated()
         )
         .addFilterAt(jwtWebFilter, SecurityWebFiltersOrder.AUTHENTICATION)

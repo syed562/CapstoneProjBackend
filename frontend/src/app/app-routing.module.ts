@@ -27,17 +27,20 @@ const routes: Routes = [
   {
     path: 'dashboard',
     canActivate: [authGuard],
-    loadChildren: () => import('./features/dashboard/dashboard.module').then(m => m.DashboardModule)
+    loadComponent: () => import('./features/dashboard/dashboard/dashboard.component')
+      .then(c => c.DashboardComponent)
   },
   {
-    path: 'customer',
+    path: 'customer/dashboard',
     canActivate: [authGuard, customerGuard],
-    loadChildren: () => import('./features/dashboard/dashboard.module').then(m => m.DashboardModule)
+    loadComponent: () => import('./features/dashboard/customer-dashboard/customer-dashboard.component')
+      .then(c => c.CustomerDashboardComponent)
   },
   {
-    path: 'officer',
+    path: 'officer/dashboard',
     canActivate: [authGuard, loanOfficerGuard],
-    loadChildren: () => import('./features/dashboard/dashboard.module').then(m => m.DashboardModule)
+    loadComponent: () => import('./features/dashboard/loan-officer-dashboard/loan-officer-dashboard.component')
+      .then(c => c.LoanOfficerDashboardComponent)
   },
   {
     path: 'loans',

@@ -1,0 +1,75 @@
+<div class="payment-dialog">
+  <h2 mat-dialog-title>Pay EMI #{{ data.emiNumber }}</h2>
+
+  <div *ngIf="success" class="success-message">
+    <div class="checkmark">✓</div>
+    <p>Payment Successful!</p>
+    <small>Your payment has been processed.</small>
+  </div>
+
+  <div *ngIf="!success" mat-dialog-content class="dialog-content">
+    <!-- Loan Details -->
+    <div class="details-box">
+      <div class="detail-row">
+        <span class="label">Due Date:</span>
+        <span class="value">{{ data.dueDate }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">EMI Amount:</span>
+        <span class="value amount">₹{{ data.amount | number:'1.0-0' }}</span>
+      </div>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="error" class="error-message">
+      {{ error }}
+    </div>
+
+    <!-- Payment Form -->
+    <div *ngIf="!loading" class="form-section">
+      <!-- Payment Amount -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Payment Amount</mat-label>
+        <input matInput type="number" [(ngModel)]="paymentAmount" placeholder="Enter amount" />
+        <mat-hint>Amount to be paid</mat-hint>
+      </mat-form-field>
+
+      <!-- Payment Method -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Payment Method</mat-label>
+        <mat-select [(ngModel)]="paymentMethod">
+          <mat-option *ngFor="let method of paymentMethods" [value]="method.value">
+            {{ method.label }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <!-- Transaction ID -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Transaction ID</mat-label>
+        <input matInput [(ngModel)]="transactionId" placeholder="Enter or generate transaction ID" />
+        <mat-hint>Unique transaction identifier</mat-hint>
+      </mat-form-field>
+
+      <button mat-stroked-button (click)="generateDummyTransactionId()" class="generate-btn">
+        Generate Dummy Transaction ID
+      </button>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div *ngIf="loading" class="loading-section">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>Processing payment...</p>
+    </div>
+  </div>
+
+  <!-- Dialog Actions -->
+  <div mat-dialog-actions class="dialog-actions" *ngIf="!loading">
+    <button mat-button (click)="onCancel()" [disabled]="loading">
+      Cancel
+    </button>
+    <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="loading || success">
+      {{ success ? 'Completed' : 'Pay Now' }}
+    </button>
+  </div>
+</div>

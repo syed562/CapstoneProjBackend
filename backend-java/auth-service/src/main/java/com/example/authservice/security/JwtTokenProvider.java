@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +14,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @Component
 public class JwtTokenProvider {
     private final Key key;
@@ -27,10 +29,13 @@ public class JwtTokenProvider {
     }
 
     public String generateToken(String userId, String username, String role) {
+        log.debug("Generating JWT token for user: {}, userId: {}, role: {}", username, userId, role);
         Map<String, Object> claims = new HashMap<>();
         claims.put("role", role);
         claims.put("username", username);
-        return createToken(claims, userId);
+        String token = createToken(claims, userId);
+        log.debug("JWT token generated successfully for user: {}", username);
+        return token;
     }
 
     private String createToken(Map<String, Object> claims, String subject) {
@@ -60,12 +65,15 @@ public class JwtTokenProvider {
 
     public boolean validateToken(String token) {
         try {
+            log.debug("Validating JWT token");
             Jwts.parser()
                     .verifyWith((SecretKey) key)
                     .build()
                     .parseSignedClaims(token);
+            log.debug("JWT token is valid");
             return true;
         } catch (Exception e) {
+            log.debug("JWT token validation failed: {}", e.getMessage());
             return false;
         }
     }

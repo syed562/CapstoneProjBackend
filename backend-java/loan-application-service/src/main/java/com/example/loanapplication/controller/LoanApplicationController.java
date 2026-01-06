@@ -44,6 +44,12 @@ public class LoanApplicationController {
         return ResponseEntity.ok(apps.listAll());
     }
 
+    @GetMapping("/all")
+    @PreAuthorize("hasRole('LOAN_OFFICER') or hasRole('ADMIN')")
+    public ResponseEntity<List<LoanApplication>> getAllApplications() {
+        return ResponseEntity.ok(apps.listAll());
+    }
+
     @GetMapping("/my")
     @PreAuthorize("hasRole('CUSTOMER') or hasRole('ADMIN')")
     public ResponseEntity<List<LoanApplication>> my(@RequestParam("userId") String userId) {

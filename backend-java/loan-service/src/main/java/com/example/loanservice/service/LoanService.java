@@ -6,6 +6,7 @@ import com.example.loanservice.domain.Loan;
 import com.example.loanservice.domain.LoanRepository;
 import com.example.loanservice.domain.LoanType;
 import com.example.loanservice.emi.EMIService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.HashMap;
 
+@Slf4j
 @Service
 public class LoanService {
     private final LoanRepository repo;
@@ -124,39 +126,47 @@ public class LoanService {
      */
     @Transactional
     public void createLoanFromApplication(com.example.loanservice.controller.dto.CreateLoanRequest req) {
-        System.out.println("[LOAN-SERVICE] Creating loan from approved application data");
-        System.out.println("[LOAN-SERVICE] Loan Request - UserId: " + req.getUserId() + ", Amount: " + req.getAmount() + ", Type: " + req.getLoanType());
+        log.info("[LOAN-SERVICE] Creating loan from approved application data");
+        log.debug("[LOAN-SERVICE] Loan Request - UserId: {}, Amount: {}, Type: {}", req.getUserId(), req.getAmount(), req.getLoanType());
         
         String now = Instant.now().toString();
         Loan loan = new Loan();
         loan.setId(UUID.randomUUID().toString());
         loan.setUserId(req.getUserId());
         loan.setAmount(req.getAmount());
-        loan.setLoanType(req.getLoanType());
+        
+        // Convert String loanType to LoanType enum
+        LoanType loanType;
+        try {
+            loanType = LoanType.valueOf(req.getLoanType().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            log.error("[LOAN-SERVICE] Invalid loan type: {}", req.getLoanType());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid loan type: " + req.getLoanType());
+        }
+        loan.setLoanType(loanType);
         loan.setTermMonths(req.getTermMonths());
-        Double resolvedRate = req.getRatePercent() != null ? req.getRatePercent() : resolveRateForType(req.getLoanType());
+        Double resolvedRate = req.getRatePercent() != null ? req.getRatePercent() : resolveRateForType(loanType);
         loan.setRatePercent(resolvedRate);
-        loan.setStatus("approved");
+        loan.setStatus("ACTIVE");  // Changed from APPROVED to ACTIVE
         loan.setOutstandingBalance(req.getAmount());
         loan.setCreatedAt(now);
         loan.setUpdatedAt(now);
         
-        System.out.println("[LOAN-SERVICE] Saving loan to database - Amount: " + loan.getAmount() + ", Type: " + loan.getLoanType() + ", TermMonths: " + loan.getTermMonths());
+        log.debug("[LOAN-SERVICE] Saving loan to database - Amount: {}, Type: {}, TermMonths: {}", loan.getAmount(), loan.getLoanType(), loan.getTermMonths());
         Loan saved = repo.save(loan);
-        System.out.println("[LOAN-SERVICE] ✓ Loan saved to database with ID: " + saved.getId());
+        log.info("[LOAN-SERVICE] ✓ Loan saved to database with ID: {}", saved.getId());
 
         // Auto-generate EMI schedule after approval
-        System.out.println("[LOAN-SERVICE] Generating EMI schedule for loan: " + saved.getId());
+        log.debug("[LOAN-SERVICE] Generating EMI schedule for loan: {}", saved.getId());
         try {
             emiService.generateEMISchedule(saved.getId());
-            System.out.println("[LOAN-SERVICE] ✓ EMI schedule generated successfully");
+            log.info("[LOAN-SERVICE] ✓ EMI schedule generated successfully");
         } catch (Exception e) {
-            System.err.println("[LOAN-SERVICE] ✗ EMI generation failed: " + e.getMessage());
-            e.printStackTrace();
+            log.error("[LOAN-SERVICE] ✗ EMI generation failed: {}", e.getMessage(), e);
         }
         
         // Send EMI notification to customer
-        System.out.println("[LOAN-SERVICE] Sending EMI notification to customer: " + req.getUserId());
+        log.debug("[LOAN-SERVICE] Sending EMI notification to customer: {}", req.getUserId());
         try {
             notificationService.sendEMINotification(req.getUserId(), saved.getId(),
                 req.getAmount(), resolvedRate, req.getTermMonths());

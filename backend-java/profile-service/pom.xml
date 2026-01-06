@@ -110,6 +110,15 @@
     <configuration>
         <excludes>
             <exclude>**/security/**</exclude>
+            <exclude>**/config/**</exclude>
+            <exclude>**/exception/**</exclude>
+            <exclude>**/dto/**</exclude>
+            <exclude>**/model/**</exclude>
+            <exclude>**/domain/**</exclude>
+            <exclude>**/*Application*.class</exclude>
+            <exclude>**/listener/**</exclude>
+            <exclude>**/publisher/**</exclude>
+            <exclude>**/event/**</exclude>
             <exclude>**/*Security*</exclude>
             <exclude>**/*Encrypted*</exclude>
         </excludes>

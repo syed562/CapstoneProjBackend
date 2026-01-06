@@ -14,6 +14,9 @@ public class LoanApplication {
     @Column(nullable = false)
     private String userId;
 
+    @Transient
+    private String userName;  // Will be populated by service layer
+
     @Column(nullable = false)
     @Convert(converter = EncryptedStringConverter.class)
     private String amount;  // Encrypted: loan amount

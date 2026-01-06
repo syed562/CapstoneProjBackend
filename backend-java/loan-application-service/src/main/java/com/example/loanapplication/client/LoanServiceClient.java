@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
  * IMPORTANT: Loan Service creates loans from application data
  * It does NOT approve applications - that's handled by LoanApplicationService
  */
-@FeignClient(name = "loan-service", url = "http://localhost:8085", fallback = LoanServiceClientFallback.class)
+@FeignClient(name = "loan-service", fallback = LoanServiceClientFallback.class)
 public interface LoanServiceClient {
     
     /**

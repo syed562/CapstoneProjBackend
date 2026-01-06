@@ -154,4 +154,13 @@ export class LoanService {
       })
     );
   }
+
+  recordPayment(paymentData: any): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/payments/record`, paymentData).pipe(
+      catchError(error => {
+        this.errorHandler.handleError(error);
+        throw error;
+      })
+    );
+  }
 }

@@ -3,6 +3,8 @@ package com.example.loanapplication.security;
 import java.io.IOException;
 import java.util.Collections;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,6 +22,8 @@ import jakarta.servlet.http.HttpServletResponse;
  */
 @Component
 public class GatewayAuthenticationFilter extends OncePerRequestFilter {
+    
+    private static final Logger log = LoggerFactory.getLogger(GatewayAuthenticationFilter.class);
 
     @Override
     protected void doFilterInternal(
@@ -31,6 +35,9 @@ public class GatewayAuthenticationFilter extends OncePerRequestFilter {
         String role = request.getHeader("X-User-Role");
         String username = request.getHeader("X-User-Name");
 
+        log.debug("[GATEWAY-FILTER] Request URI: {}", request.getRequestURI());
+        log.debug("[GATEWAY-FILTER] X-User-Id: {}, X-User-Role: {}, X-User-Name: {}", userId, role, username);
+
         if (userId != null && role != null) {
             SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + role);
             UsernamePasswordAuthenticationToken authentication =
@@ -41,6 +48,9 @@ public class GatewayAuthenticationFilter extends OncePerRequestFilter {
                     );
             authentication.setDetails(username);
             SecurityContextHolder.getContext().setAuthentication(authentication);
+            log.debug("[GATEWAY-FILTER] Authentication set for user {} with role {}", userId, role);
+        } else {
+            log.warn("[GATEWAY-FILTER] Missing gateway headers - userId: {}, role: {}", userId, role);
         }
 
         filterChain.doFilter(request, response);

@@ -5,6 +5,7 @@ import com.example.loanservice.domain.Payment;
 import com.example.loanservice.domain.LoanType;
 import com.example.loanservice.service.LoanService;
 import com.example.loanservice.service.PaymentService;
+import com.example.loanservice.emi.EMIService;
 import com.example.loanservice.controller.dto.CreateLoanRequest;
 import com.example.loanservice.controller.dto.UpdateStatusRequest;
 import com.example.loanservice.controller.RecordPaymentRequest;
@@ -30,12 +31,15 @@ class LoanControllerTest {
     @Mock
     private LoanService loanService;
 
+    @Mock
+    private EMIService emiService;
+
     private LoanController controller;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        controller = new LoanController(loanService);
+        controller = new LoanController(loanService, emiService);
     }
 
     @Test
@@ -136,7 +140,7 @@ class LoanControllerTest {
         // Arrange
         CreateLoanRequest req = new CreateLoanRequest();
         req.setUserId("user123");
-        req.setLoanType(LoanType.PERSONAL);
+        req.setLoanType("PERSONAL");
         req.setAmount(100000.0);
         req.setTermMonths(24);
         req.setRatePercent(12.0);

@@ -121,7 +121,7 @@ class LoanServiceTest {
         CreateLoanRequest req = new CreateLoanRequest();
         req.setUserId("u1");
         req.setAmount(10000.0);
-        req.setLoanType(LoanType.AUTO);
+        req.setLoanType("AUTO");
         req.setTermMonths(24);
 
         when(repo.save(any())).thenAnswer(i -> i.getArgument(0));

@@ -1,6 +1,11 @@
 package com.example.loanservice.domain;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.Data;
 
 @Entity
@@ -36,6 +41,12 @@ public class Loan {
 
     @Column(nullable = false)
     private String updatedAt;
+
+    // Explicit accessors to keep tests compiling even if Lombok processing is skipped
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+    public Double getRatePercent() { return ratePercent; }
+    public void setRatePercent(Double ratePercent) { this.ratePercent = ratePercent; }
 
    
 }

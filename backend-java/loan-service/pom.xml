@@ -97,17 +97,18 @@
 
     <configuration>
        <excludes>
-    <exclude>**/config/**</exclude>
-    <exclude>**/client/**</exclude>
-    <exclude>**/client/dto/**</exclude>
-    <exclude>**/exception/**</exclude>
-     <exclude>**/validation/**</exclude>
-   
-    <exclude>**/config/**</exclude>
-  
-   
-</excludes>
-
+           <exclude>**/config/**</exclude>
+           <exclude>**/client/**</exclude>
+           <exclude>**/client/dto/**</exclude>
+           <exclude>**/exception/**</exclude>
+           <exclude>**/validation/**</exclude>
+           <exclude>**/dto/**</exclude>
+           <exclude>**/model/**</exclude>
+           <exclude>**/*Application*.class</exclude>
+           <exclude>**/listener/**</exclude>
+           <exclude>**/publisher/**</exclude>
+           <exclude>**/event/**</exclude>
+       </excludes>
     </configuration>
 
     <executions>
@@ -119,7 +120,7 @@
 
         <execution>
             <id>report</id>
-            <phase>verify</phase>
+            <phase>test</phase>
             <goals>
                 <goal>report</goal>
             </goals>

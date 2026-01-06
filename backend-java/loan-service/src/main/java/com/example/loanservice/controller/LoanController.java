@@ -1,8 +1,10 @@
 package com.example.loanservice.controller;
 
 import com.example.loanservice.service.LoanService;
+import com.example.loanservice.emi.EMIService;
 import com.example.loanservice.controller.dto.CreateLoanRequest;
 import com.example.loanservice.controller.dto.UpdateStatusRequest;
+import com.example.loanservice.domain.LoanType;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
@@ -16,9 +18,11 @@ import java.util.List;
 @RequestMapping("/api/loans")
 public class LoanController {
     private final LoanService loans;
+    private final EMIService emiService;
 
-    public LoanController(LoanService loans) {
+    public LoanController(LoanService loans, EMIService emiService) {
         this.loans = loans;
+        this.emiService = emiService;
     }
 
     @GetMapping
@@ -68,9 +72,15 @@ public class LoanController {
         return loans.get(id);
     }
 
+    @GetMapping("/{id}/emi-schedule")
+    public List<com.example.loanservice.emi.EMISchedule> getEmiSchedule(@PathVariable("id") String id) {
+        return emiService.getEMISchedule(id);
+    }
+
     @PostMapping
     public Loan create(@Valid @RequestBody CreateLoanRequest req) {
-        return loans.create(req.getUserId(), req.getLoanType(), req.getAmount(), req.getTermMonths(), req.getRatePercent());
+        LoanType loanType = LoanType.valueOf(req.getLoanType().toUpperCase());
+        return loans.create(req.getUserId(), loanType, req.getAmount(), req.getTermMonths(), req.getRatePercent());
     }
 
     @PostMapping("/from-application")
