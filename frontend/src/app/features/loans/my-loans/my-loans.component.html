@@ -1,8 +1,12 @@
 <div class="my-loans">
 	<h2>My Loans</h2>
 
+	<div class="alert alert-danger" *ngIf="error">
+		<mat-icon>error</mat-icon>
+		{{ error }}
+	</div>
+
 	<div *ngIf="loading">Loading your loans...</div>
-	<div *ngIf="error" class="error">{{ error }}</div>
 
 	<div *ngIf="!loading && !error && loans.length === 0">
 		You have no loans yet.

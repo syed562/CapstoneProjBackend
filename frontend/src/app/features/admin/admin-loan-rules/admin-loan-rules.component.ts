@@ -36,6 +36,8 @@ export class AdminLoanRulesComponent implements OnInit {
   loading = false;
   submitting = false;
   editingType: string | null = null;
+  error = '';
+  success = '';
 
   displayedColumns: string[] = ['loanType', 'rate', 'actions'];
 
@@ -58,12 +60,15 @@ export class AdminLoanRulesComponent implements OnInit {
 
   loadRates(): void {
     this.loading = true;
+    this.error = '';
+    this.success = '';
     this.adminService.getAllRates().subscribe({
       next: (rates) => {
         this.rates = rates;
         this.loading = false;
       },
-      error: () => {
+      error: (err) => {
+        this.error = err?.error?.message || 'Failed to load rates';
         this.loading = false;
       }
     });
@@ -95,14 +100,19 @@ export class AdminLoanRulesComponent implements OnInit {
     };
 
     this.submitting = true;
+    this.error = '';
+    this.success = '';
     this.adminService.updateRate(request).subscribe({
       next: () => {
         this.submitting = false;
         this.rates[loanType] = request.rate;
         this.form.reset();
         this.editingType = null;
+        this.success = 'Rate updated successfully';
+        setTimeout(() => { this.success = ''; }, 3000);
       },
-      error: () => {
+      error: (err) => {
+        this.error = err?.error?.message || 'Failed to update rate';
         this.submitting = false;
       }
     });
@@ -111,14 +121,19 @@ export class AdminLoanRulesComponent implements OnInit {
   resetToDefaults(): void {
     if (confirm('Are you sure? This will reset all rates to defaults.')) {
       this.submitting = true;
+      this.error = '';
+      this.success = '';
       this.adminService.resetRatesToDefaults().subscribe({
         next: (res) => {
           this.rates = res.rates;
           this.submitting = false;
           this.editingType = null;
           this.form.reset();
+          this.success = 'Rates reset to defaults successfully';
+          setTimeout(() => { this.success = ''; }, 3000);
         },
-        error: () => {
+        error: (err) => {
+          this.error = err?.error?.message || 'Failed to reset rates';
           this.submitting = false;
         }
       });

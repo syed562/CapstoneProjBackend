@@ -1,8 +1,12 @@
 <div class="admin-loan-schedules">
   <h2>Loan Schedules & Payments</h2>
 
+  <div class="alert alert-danger" *ngIf="error">
+    <mat-icon>error</mat-icon>
+    {{ error }}
+  </div>
+
   <div *ngIf="loading">Loading loans...</div>
-  <div *ngIf="error" class="error">{{ error }}</div>
 
   <table *ngIf="!loading && loans.length" class="loan-table">
     <thead>

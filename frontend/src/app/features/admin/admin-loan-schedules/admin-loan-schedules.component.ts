@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
 import { LoanService } from '../../../core/services/loan.service';
 import { forkJoin } from 'rxjs';
 
@@ -21,14 +22,14 @@ interface LoanRow {
 @Component({
   selector: 'app-admin-loan-schedules',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, MatIconModule],
   templateUrl: './admin-loan-schedules.component.html',
   styleUrl: './admin-loan-schedules.component.scss'
 })
 export class AdminLoanSchedulesComponent implements OnInit {
   loans: LoanRow[] = [];
   loading = false;
-  error: string | null = null;
+  error: string = '';
 
   constructor(private loanService: LoanService) {}
 
@@ -38,7 +39,7 @@ export class AdminLoanSchedulesComponent implements OnInit {
 
   loadLoans(): void {
     this.loading = true;
-    this.error = null;
+    this.error = '';
     this.loanService.getAllLoans().subscribe({
       next: (data) => {
         this.loans = (data || []).map((l: any) => ({
@@ -54,8 +55,8 @@ export class AdminLoanSchedulesComponent implements OnInit {
         }));
         this.loading = false;
       },
-      error: () => {
-        this.error = 'Failed to load loans';
+      error: (err) => {
+        this.error = err?.error?.message || err?.message || 'Failed to load loans';
         this.loading = false;
       }
     });
@@ -74,8 +75,8 @@ export class AdminLoanSchedulesComponent implements OnInit {
           loan.payments = res.payments || [];
           loan.loadingDetails = false;
         },
-        error: () => {
-          this.error = 'Failed to load schedule/payments';
+        error: (err) => {
+          this.error = err?.error?.message || err?.message || 'Failed to load schedule/payments';
           loan.loadingDetails = false;
         }
       });

@@ -4,6 +4,15 @@
     <p>Configure interest rates for different loan types</p>
   </div>
 
+  <div class="alert alert-danger" *ngIf="error">
+    <mat-icon>error</mat-icon>
+    {{ error }}
+  </div>
+  <div class="alert alert-success" *ngIf="success">
+    <mat-icon>check_circle</mat-icon>
+    {{ success }}
+  </div>
+
   <div class="content-grid">
     <!-- Edit Form Card -->
     <mat-card class="edit-card">

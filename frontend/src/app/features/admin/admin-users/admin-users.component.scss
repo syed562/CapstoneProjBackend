@@ -47,12 +47,27 @@ button.danger {
   color: #c62828;
 }
 
-.error {
-  color: #c62828;
-  margin-top: 8px;
+.alert {
+  padding: 12px 16px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+
+  mat-icon {
+    flex-shrink: 0;
+  }
 }
 
-.empty {
-  margin-top: 12px;
-  color: #666;
+.alert-danger {
+  background-color: #ffebee;
+  color: #c62828;
+  border-left: 4px solid #c62828;
 }
+
+.alert-success {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border-left: 4px solid #2e7d32;

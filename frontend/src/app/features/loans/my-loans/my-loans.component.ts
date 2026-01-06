@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { MatIconModule } from '@angular/material/icon';
 import { LoanService } from '../../../core/services/loan.service';
 import { AuthService } from '../../../core/services/auth.service';
 
@@ -16,7 +17,7 @@ interface LoanView {
 
 @Component({
   selector: 'app-my-loans',
-  standalone: true,
+  standalone: true,, MatIconModule
   imports: [CommonModule],
   templateUrl: './my-loans.component.html',
   styleUrl: './my-loans.component.scss'
@@ -24,7 +25,7 @@ interface LoanView {
 export class MyLoansComponent implements OnInit {
   loans: LoanView[] = [];
   loading = false;
-  error: string | null = null;
+  error: string = '';
 
   constructor(
     private loanService: LoanService,
@@ -54,9 +55,9 @@ export class MyLoansComponent implements OnInit {
         this.loading = false;
       },
       error: (err) => {
-        console.error('Failed to load loans', err);
-        this.error = 'Could not load your loans right now.';
+        this.error = err?.error?.message || err?.message || 'Could not load your loans right now.';
         this.loading = false;
+        console.error('Failed to load loans', err);
       }
     });
   }

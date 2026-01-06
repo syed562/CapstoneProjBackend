@@ -1,8 +1,16 @@
 <div class="admin-users">
   <h2>User Management</h2>
 
+  <div class="alert alert-danger" *ngIf="error">
+    <mat-icon>error</mat-icon>
+    {{ error }}
+  </div>
+  <div class="alert alert-success" *ngIf="success">
+    <mat-icon>check_circle</mat-icon>
+    {{ success }}
+  </div>
+
   <div *ngIf="loading">Loading users...</div>
-  <div *ngIf="error" class="error">{{ error }}</div>
 
   <table *ngIf="!loading && users.length" class="users-table">
     <thead>
