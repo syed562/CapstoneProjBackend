@@ -7,6 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatStepperModule } from '@angular/material/stepper';
+import { MatIconModule } from '@angular/material/icon';
 import { ProfileService } from '../../core/services/profile.service';
 import { AuthService } from '../../core/services/auth.service';
 
@@ -20,7 +21,8 @@ import { AuthService } from '../../core/services/auth.service';
     MatInputModule,
     MatButtonModule,
     MatCardModule,
-    MatStepperModule
+    MatStepperModule,
+    MatIconModule
   ],
   templateUrl: './complete-profile.component.html',
   styleUrl: './complete-profile.component.scss'

@@ -1,8 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { forkJoin, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { LoanService } from '../../../core/services/loan.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { UserAdminService } from '../../../core/services/user-admin.service';
 
 interface ApplicationView {
   id: string;
@@ -32,6 +35,7 @@ export class LoanApplicationsComponent implements OnInit {
   constructor(
     private loanService: LoanService,
     private authService: AuthService,
+    private userAdminService: UserAdminService,
     private router: Router
   ) {}
 
@@ -51,18 +55,76 @@ export class LoanApplicationsComponent implements OnInit {
 
     request$.subscribe({
       next: (apps) => {
-        this.applications = (apps || []).map((a: any) => ({
-          id: a.id,
-          userId: a.userId,
-          userName: a.userName,
-          amount: a.amount,
-          termMonths: a.termMonths ?? a.tenure,
-          status: a.status,
-          loanType: a.loanType,
-          createdAt: a.createdAt,
-          actionInProgress: false
-        }));
-        this.loading = false;
+        // Create a map of applications
+        const applicationMap = new Map<string, any>();
+        (apps || []).forEach((a: any) => {
+          applicationMap.set(a.userId, {
+            id: a.id,
+            userId: a.userId,
+            userName: a.userName,
+            amount: a.amount,
+            termMonths: a.termMonths ?? a.tenure,
+            status: a.status,
+            loanType: a.loanType,
+            createdAt: a.createdAt,
+            actionInProgress: false
+          });
+        });
+
+        // If admin/officer and applications don't have userNames, fetch user details
+        if (isAdminOrOfficer && (apps || []).some((a: any) => !a.userName)) {
+          const userIds = Array.from(new Set((apps || []).map((a: any) => a.userId)));
+          this.userAdminService.listUsers().subscribe({
+            next: (users) => {
+              const userMap = new Map();
+              (users || []).forEach((u: any) => {
+                userMap.set(u.id, u.username);
+              });
+
+              this.applications = (apps || []).map((a: any) => ({
+                id: a.id,
+                userId: a.userId,
+                userName: a.userName || userMap.get(a.userId) || 'Unknown',
+                amount: a.amount,
+                termMonths: a.termMonths ?? a.tenure,
+                status: a.status,
+                loanType: a.loanType,
+                createdAt: a.createdAt,
+                actionInProgress: false
+              }));
+              this.loading = false;
+            },
+            error: (err) => {
+              console.error('Failed to load user details', err);
+              // Fallback: show applications without user details
+              this.applications = (apps || []).map((a: any) => ({
+                id: a.id,
+                userId: a.userId,
+                userName: a.userName || 'Unknown',
+                amount: a.amount,
+                termMonths: a.termMonths ?? a.tenure,
+                status: a.status,
+                loanType: a.loanType,
+                createdAt: a.createdAt,
+                actionInProgress: false
+              }));
+              this.loading = false;
+            }
+          });
+        } else {
+          this.applications = (apps || []).map((a: any) => ({
+            id: a.id,
+            userId: a.userId,
+            userName: a.userName || 'Unknown',
+            amount: a.amount,
+            termMonths: a.termMonths ?? a.tenure,
+            status: a.status,
+            loanType: a.loanType,
+            createdAt: a.createdAt,
+            actionInProgress: false
+          }));
+          this.loading = false;
+        }
       },
       error: (err) => {
         console.error('Failed to load applications', err);

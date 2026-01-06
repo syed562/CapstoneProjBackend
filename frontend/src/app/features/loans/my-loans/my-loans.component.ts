@@ -17,8 +17,8 @@ interface LoanView {
 
 @Component({
   selector: 'app-my-loans',
-  standalone: true,, MatIconModule
-  imports: [CommonModule],
+  standalone: true,
+  imports: [CommonModule, MatIconModule],
   templateUrl: './my-loans.component.html',
   styleUrl: './my-loans.component.scss'
 })

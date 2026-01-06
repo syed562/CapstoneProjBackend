@@ -3,7 +3,15 @@ import { RouterModule, Routes } from '@angular/router';
 import { EmiScheduleComponent } from './emi-schedule/emi-schedule.component';
 
 const routes: Routes = [
-  { path: '', component: EmiScheduleComponent }
+  { 
+    path: '', 
+    component: EmiScheduleComponent,
+    pathMatch: 'full'
+  },
+  { 
+    path: 'schedule', 
+    component: EmiScheduleComponent 
+  }
 ];
 
 @NgModule({

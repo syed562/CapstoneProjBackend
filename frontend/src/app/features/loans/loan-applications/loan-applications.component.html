@@ -11,7 +11,7 @@
   <table *ngIf="!loading && !error && applications.length > 0" class="app-table">
     <thead>
       <tr>
-        <th *ngIf="isAdminOrOfficer()">Applicant</th>
+        <th *ngIf="isAdminOrOfficer()">User ID</th>
         <th>Type</th>
         <th>Amount</th>
         <th>Term (months)</th>
@@ -21,7 +21,7 @@
     </thead>
     <tbody>
       <tr *ngFor="let app of applications">
-        <td *ngIf="isAdminOrOfficer()">{{ app.userName || 'Unknown' }}</td>
+        <td *ngIf="isAdminOrOfficer()">{{ app.userId }}</td>
         <td>{{ app.loanType }}</td>
         <td>{{ app.amount | number:'1.0-0' }}</td>
         <td>{{ app.termMonths }}</td>
