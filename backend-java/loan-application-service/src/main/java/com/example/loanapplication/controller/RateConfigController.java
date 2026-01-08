@@ -24,19 +24,13 @@ public class RateConfigController {
         this.rateConfigService = rateConfigService;
     }
 
-    /**
-     * GET all available loan types and their current rates
-     * Accessible to all authenticated users
-     */
+  
     @GetMapping
     public ResponseEntity<Map<String, Double>> getAllRates() {
         return ResponseEntity.ok(rateConfigService.getAllRates());
     }
 
-    /**
-     * POST update a rate for a specific loan type
-     * Admin only
-     */
+   
     @PostMapping("/update")
     @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, Object>> updateRate(@Valid @RequestBody UpdateRateRequest request) {
@@ -54,10 +48,7 @@ public class RateConfigController {
         ));
     }
 
-    /**
-     * POST reset all rates to defaults
-     * Admin only
-     */
+    
     @PostMapping("/reset")
     public ResponseEntity<Map<String, Object>> resetRates() {
         requireAdmin();
@@ -71,9 +62,7 @@ public class RateConfigController {
         ));
     }
 
-    /**
-     * Verify user is admin
-     */
+   
     private void requireAdmin() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || auth.getAuthorities() == null) {

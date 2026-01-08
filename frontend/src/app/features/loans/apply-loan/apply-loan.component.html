@@ -43,18 +43,15 @@
           <mat-error *ngIf="loanForm.get('termMonths')?.hasError('required')">
             Tenure is required
           </mat-error>
-          <mat-error *ngIf="loanForm.get('termMonths')?.hasError('min')">
-            Minimum tenure is 6 months
-          </mat-error>
-          <mat-error *ngIf="loanForm.get('termMonths')?.hasError('max')">
-            Maximum tenure is 360 months (30 years)
+          <mat-error *ngIf="loanForm.get('termMonths')?.hasError('invalidTenure')">
+            Tenure must be 12, 24, or 36 months.
           </mat-error>
         </mat-form-field>
 
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Interest Rate (%) - Optional</mat-label>
-          <input matInput type="number" formControlName="ratePercent" placeholder="Enter interest rate" step="0.01">
-        </mat-form-field>
+        <div class="info-box">
+          <mat-icon>info</mat-icon>
+          <span>Interest rate will be automatically determined based on your loan type and profile</span>
+        </div>
 
         <div class="button-row">
           <button mat-raised-button color="primary" type="submit" [disabled]="loading || loanForm.invalid">

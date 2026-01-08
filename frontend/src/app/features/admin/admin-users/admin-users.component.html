@@ -1,5 +1,15 @@
 <div class="admin-users">
-  <h2>User Management</h2>
+  <div class="header-row">
+    <div class="title">
+      <h2>User Management</h2>
+      <p class="subtitle">Manage roles, status, and access</p>
+    </div>
+    <div class="metrics" *ngIf="users?.length">
+      <span class="badge primary">Total: {{ users.length }}</span>
+      <span class="badge success">Active: {{ activeCount }}</span>
+      <span class="badge warn">Inactive: {{ inactiveCount }}</span>
+    </div>
+  </div>
 
   <div class="alert alert-danger" *ngIf="error">
     <mat-icon>error</mat-icon>
@@ -10,43 +20,62 @@
     {{ success }}
   </div>
 
-  <div *ngIf="loading">Loading users...</div>
+  <div class="card" *ngIf="loading">
+    <div class="loading">Loading users...</div>
+  </div>
 
-  <table *ngIf="!loading && users.length" class="users-table">
-    <thead>
-      <tr>
-        <th>Username</th>
-        <th>Email</th>
-        <th>Role</th>
-        <th>Status</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let user of users">
-        <td>{{ user.username }}</td>
-        <td>{{ user.email }}</td>
-        <td>
-          <select [value]="user.role" (change)="onRoleChange(user, $any($event.target).value)" [disabled]="saving[user.id]">
-            <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
-          </select>
-        </td>
-        <td>
-          <span class="status" [class.active]="user.status === 'ACTIVE'" [class.inactive]="user.status !== 'ACTIVE'">
-            {{ user.status }}
-          </span>
-        </td>
-        <td>
-          <button (click)="toggleStatus(user)" [disabled]="saving[user.id]">
-            {{ user.status === 'ACTIVE' ? 'Deactivate' : 'Activate' }}
-          </button>
-          <button class="danger" (click)="deleteUser(user)" [disabled]="saving[user.id] || (currentUserId && currentUserId === user.id)">
-            Delete
-          </button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <div class="card" *ngIf="!loading && users.length">
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Status</th>
+          <th class="actions-col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of users">
+          <td>
+            <div class="cell-main">
+              <span class="avatar" [attr.data-letter]="(user.username?.charAt(0)?.toUpperCase() ?? '')"></span>
+              <div class="cell-text">
+                <div class="username">{{ user.username }}</div>
+                <div class="email">{{ user.email }}</div>
+              </div>
+            </div>
+          </td>
+          <td class="hide-md">{{ user.email }}</td>
+          <td>
+            <div class="role-select">
+              <select [value]="user.role" (change)="onRoleChange(user, $any($event.target).value)" [disabled]="saving[user.id]">
+                <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
+              </select>
+            </div>
+          </td>
+          <td>
+            <span class="status" [class.active]="user.status === 'ACTIVE'" [class.inactive]="user.status !== 'ACTIVE'">
+              {{ user.status }}
+            </span>
+          </td>
+          <td class="actions-col">
+            <button class="btn outline" (click)="toggleStatus(user)" [disabled]="saving[user.id]">
+              <mat-icon>{{ statusIcon(user) }}</mat-icon>
+              <span>{{ statusActionLabel(user) }}</span>
+            </button>
+            <button class="btn danger" (click)="deleteUser(user)" [disabled]="saving[user.id] || (currentUserId && currentUserId === user.id)">
+              <mat-icon>delete</mat-icon>
+              <span>Delete</span>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
-  <div *ngIf="!loading && !users.length" class="empty">No users found.</div>
+  <div class="card empty" *ngIf="!loading && !users.length">
+    <mat-icon>group_off</mat-icon>
+    <div>No users found.</div>
+  </div>
 </div>

@@ -1,5 +1,6 @@
 package com.example.loanservice.service;
 
+import com.example.loanservice.client.ProfileServiceClient;
 import com.example.loanservice.event.EMIEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,12 +12,14 @@ import static org.mockito.Mockito.*;
 class NotificationPublisherTest {
 
     private RabbitTemplate rabbitTemplate;
+    private ProfileServiceClient profileServiceClient;
     private NotificationPublisher publisher;
 
     @BeforeEach
     void setup() {
         rabbitTemplate = mock(RabbitTemplate.class);
-        publisher = new NotificationPublisher(rabbitTemplate);
+        profileServiceClient = mock(ProfileServiceClient.class);
+        publisher = new NotificationPublisher(rabbitTemplate, profileServiceClient);
     }
 
     @Test

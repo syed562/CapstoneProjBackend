@@ -9,7 +9,12 @@ import { CompleteProfileComponent } from './features/profile/complete-profile.co
 import { ViewProfileComponent } from './features/profile/view-profile.component';
 
 const routes: Routes = [
-  { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
+  { path: '', redirectTo: '/home', pathMatch: 'full' },
+  {
+    path: 'home',
+    loadComponent: () => import('./features/home/home.component')
+      .then(c => c.HomeComponent)
+  },
   {
     path: 'auth',
     loadChildren: () => import('./features/auth/auth.module').then(m => m.AuthModule)

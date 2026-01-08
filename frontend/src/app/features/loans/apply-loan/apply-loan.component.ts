@@ -42,13 +42,20 @@ export class ApplyLoanComponent implements OnInit {
     private router: Router
   ) {}
 
+  allowedTenures = [12, 24, 36];
+
   ngOnInit() {
     this.loanForm = this.fb.group({
       amount: ['', [Validators.required, Validators.min(10000)]],
-      termMonths: ['', [Validators.required, Validators.min(6), Validators.max(360)]],
-      loanType: ['', Validators.required],
-      ratePercent: ['']
+      termMonths: ['', [Validators.required, this.tenureValidator.bind(this)]],
+      loanType: ['', Validators.required]
     });
+  }
+
+  tenureValidator(control: import('@angular/forms').AbstractControl) {
+    return this.allowedTenures.includes(Number(control.value))
+      ? null
+      : { invalidTenure: true };
   }
 
   onSubmit() {

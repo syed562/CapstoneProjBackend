@@ -4,9 +4,11 @@ import { ApplyLoanComponent } from './apply-loan/apply-loan.component';
 import { MyLoansComponent } from './my-loans/my-loans.component';
 import { LoanApplicationsComponent } from './loan-applications/loan-applications.component';
 import { LoanDetailsComponent } from './loan-details/loan-details.component';
+import { LoanCalculatorComponent } from './loan-calculator/loan-calculator.component';
 
 const routes: Routes = [
   { path: 'apply', component: ApplyLoanComponent },
+  { path: 'calculator', component: LoanCalculatorComponent },
   { path: 'my-loans', component: MyLoansComponent },
   { path: 'applications', component: LoanApplicationsComponent },
   { path: ':id', component: LoanDetailsComponent },

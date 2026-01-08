@@ -4,25 +4,14 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-/**
- * Feign client to call Loan Service
- * IMPORTANT: Loan Service creates loans from application data
- * It does NOT approve applications - that's handled by LoanApplicationService
- */
 @FeignClient(name = "loan-service", fallback = LoanServiceClientFallback.class)
 public interface LoanServiceClient {
     
-    /**
-     * Create a new loan from approved application data
-     * LoanService receives loan data (amount, term, rate, type, userId)
-     * LoanService is responsible only for creating the loan record
-     */
+    
     @PostMapping("/api/loans/from-application")
     void createLoanFromApplication(@RequestBody CreateLoanRequest request);
     
-    /**
-     * DTO for creating a loan from an approved application
-     */
+    
     class CreateLoanRequest {
         private String userId;
         private Double amount;

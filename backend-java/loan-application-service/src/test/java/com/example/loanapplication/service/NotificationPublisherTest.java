@@ -1,5 +1,6 @@
 package com.example.loanapplication.service;
 
+import com.example.loanapplication.client.ProfileServiceClient;
 import com.example.loanapplication.event.LoanApplicationEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,11 +14,13 @@ class NotificationPublisherTest {
 
     private NotificationPublisher publisher;
     private RabbitTemplate rabbitTemplate;
+    private ProfileServiceClient profileServiceClient;
 
     @BeforeEach
     void setUp() {
         rabbitTemplate = mock(RabbitTemplate.class);
-        publisher = new NotificationPublisher(rabbitTemplate);
+        profileServiceClient = mock(ProfileServiceClient.class);
+        publisher = new NotificationPublisher(rabbitTemplate, profileServiceClient);
     }
 
     @Test
@@ -100,4 +103,4 @@ class NotificationPublisherTest {
         );
     }
 }
-             
+

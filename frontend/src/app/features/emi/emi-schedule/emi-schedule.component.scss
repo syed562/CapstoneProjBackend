@@ -1,0 +1,114 @@
+.emi-schedule {
+  padding: 16px;
+}
+
+.metrics-section {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.metric-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 20px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(85, 97, 255, 0.1), rgba(52, 211, 153, 0.1));
+  border: 1px solid rgba(85, 97, 255, 0.3);
+  min-width: 100px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.metric-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  color: #5561ff;
+  margin-bottom: 4px;
+}
+
+.metric-value {
+  font-size: 24px;
+  font-weight: 900;
+  color: #1a202c;
+}
+
+.header-card {
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.loan-selector {
+  width: 100%;
+  margin-top: 16px;
+}
+
+.table-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.error-card {
+  margin-bottom: 24px;
+}
+
+.error-card mat-card {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.error-icon {
+  color: #dc2626;
+  font-size: 32px;
+  width: 32px;
+  height: 32px;
+  margin-bottom: 8px;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.emi-table {
+  width: 100%;
+}
+
+.emi-table th {
+  background-color: #f5f5f5;
+  font-weight: 600;
+  color: #424242;
+}
+
+.emi-table tr:hover {
+  background-color: #fafafa;
+}
+
+.amount, .principal {
+  font-weight: 600;
+  color: #5561ff;
+}
+
+.emi-number {
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .metrics-section {
+    flex-direction: row;
+  }
+
+  .metric-badge {
+    flex: 1;
+    min-width: auto;
+  }
+}

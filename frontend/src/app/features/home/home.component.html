@@ -1,0 +1,55 @@
+<div class="home-hero">
+  <div class="backdrop"></div>
+  <div class="pattern"></div>
+  <div class="vignette"></div>
+
+  <div class="overlay">
+    <nav class="topbar">
+      <div class="brand">
+        <div class="logo">LMS</div>
+        <span class="brand-name">Loan Management System</span>
+      </div>
+      <div class="metrics">
+        <div class="metric-badge">
+          <span class="metric-label">Total</span>
+          <span class="metric-value">12</span>
+        </div>
+        <div class="metric-badge">
+          <span class="metric-label">Paid</span>
+          <span class="metric-value">2</span>
+        </div>
+      </div>
+      <div class="nav-cta">
+        <button class="btn ghost" (click)="goSignIn()">Sign In</button>
+        <button class="btn primary" (click)="goSignUp()">Sign Up</button>
+      </div>
+    </nav>
+
+    <section class="hero-center">
+      <div class="emblem">LMS</div>
+      <h1 class="headline">Finance, <span class="accent">Simplified.</span></h1>
+      <p class="subhead">Apply, track and manage loans with clarity and confidence.</p>
+
+      <div class="features">
+        <span class="chip"><mat-icon>shield</mat-icon> Secure</span>
+        <span class="chip"><mat-icon>bolt</mat-icon> Fast</span>
+        <span class="chip"><mat-icon>visibility</mat-icon> Transparent</span>
+      </div>
+
+      <div class="cta-card glass">
+        <h2>Welcome</h2>
+        <p>Manage your loans, applications, and schedules — all in one place.</p>
+        <div class="actions">
+          <button mat-raised-button color="primary" (click)="goSignIn()" class="elevate">
+            <mat-icon>login</mat-icon>
+            <span>Sign In</span>
+          </button>
+          <button mat-stroked-button color="primary" (click)="goSignUp()" class="ghost">
+            <mat-icon>person_add</mat-icon>
+            <span>Sign Up</span>
+          </button>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

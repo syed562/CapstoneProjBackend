@@ -2,6 +2,8 @@ package com.example.loanservice.service;
 
 import com.example.loanservice.config.RabbitMQProducerConfig;
 import com.example.loanservice.event.EMIEvent;
+import com.example.loanservice.client.ProfileServiceClient;
+import com.example.loanservice.client.dto.ProfileView;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
 import lombok.extern.slf4j.Slf4j;
@@ -13,13 +15,12 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @Slf4j
 public class NotificationPublisher {
-    
     private final RabbitTemplate rabbitTemplate;
-    private static final String MOCK_USER_EMAIL = "syedsabiha982@gmail.com";
-    private static final String MOCK_USER_NAME = "Test Customer";
-    
-    public NotificationPublisher(RabbitTemplate rabbitTemplate) {
+    private final ProfileServiceClient profileServiceClient;
+
+    public NotificationPublisher(RabbitTemplate rabbitTemplate, ProfileServiceClient profileServiceClient) {
         this.rabbitTemplate = rabbitTemplate;
+        this.profileServiceClient = profileServiceClient;
     }
     
     public void publishEmiDue(EMIEvent event) {
@@ -71,15 +72,33 @@ public class NotificationPublisher {
     }
     
     /**
-     * Enrich event with mock user data for testing
-     * TODO: Replace with actual profile-service call to fetch customer email/name
+     * Enrich event with actual user data from profile service
      */
     private void enrichEventWithMockData(EMIEvent event) {
-        if (event.getUserEmail() == null || event.getUserEmail().isEmpty()) {
-            event.setUserEmail(MOCK_USER_EMAIL);
-        }
-        if (event.getUserName() == null || event.getUserName().isEmpty()) {
-            event.setUserName(MOCK_USER_NAME);
+        if (event.getUserId() != null && (event.getUserEmail() == null || event.getUserEmail().isEmpty())) {
+            try {
+                ProfileView profile = profileServiceClient.getProfile(event.getUserId());
+                if (profile != null) {
+                    if (profile.getEmail() != null && !profile.getEmail().isEmpty()) {
+                        event.setUserEmail(profile.getEmail());
+                    }
+                    if (event.getUserName() == null || event.getUserName().isEmpty()) {
+                        String fullName = "";
+                        if (profile.getFirstName() != null) {
+                            fullName = profile.getFirstName();
+                        }
+                        if (profile.getLastName() != null) {
+                            fullName = fullName.isEmpty() ? profile.getLastName() : fullName + " " + profile.getLastName();
+                        }
+                        if (!fullName.isEmpty()) {
+                            event.setUserName(fullName);
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Failed to fetch profile for userId {}: {}", event.getUserId(), e.getMessage());
+                // Continue without email/name rather than failing the notification
+            }
         }
     }
 }

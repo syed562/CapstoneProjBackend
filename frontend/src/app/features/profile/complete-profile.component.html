@@ -23,6 +23,12 @@
             
             <div class="form-row">
               <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Username</mat-label>
+                <input matInput [value]="currentUser?.username" disabled>
+                <mat-hint>Username cannot be changed</mat-hint>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="half-width">
                 <mat-label>First Name</mat-label>
                 <input matInput formControlName="firstName" required>
                 <mat-error *ngIf="personalInfoForm.get('firstName')?.hasError('required')">
@@ -39,16 +45,11 @@
               </mat-form-field>
             </div>
 
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Email</mat-label>
-              <input matInput type="email" formControlName="email" required>
-              <mat-error *ngIf="personalInfoForm.get('email')?.hasError('required')">
-                Email is required
-              </mat-error>
-              <mat-error *ngIf="personalInfoForm.get('email')?.hasError('email')">
-                Please enter a valid email
-              </mat-error>
-            </mat-form-field>
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Email</mat-label>
+                <input matInput type="email" formControlName="email" required [readonly]="personalInfoForm.get('email')?.disabled">
+                <mat-hint *ngIf="personalInfoForm.get('email')?.disabled">Email cannot be changed</mat-hint>
+              </mat-form-field>
 
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Phone Number</mat-label>

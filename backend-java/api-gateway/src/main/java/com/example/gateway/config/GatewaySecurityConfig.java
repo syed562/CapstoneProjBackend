@@ -36,7 +36,6 @@ public class GatewaySecurityConfig {
 public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
 
     AuthenticationWebFilter jwtWebFilter = new AuthenticationWebFilter(authenticationManager);
-
     jwtWebFilter.setServerAuthenticationConverter(authenticationConverter);
 
     jwtWebFilter.setAuthenticationFailureHandler((exchange, ex) -> {
@@ -64,9 +63,15 @@ public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http)
             .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
             .pathMatchers("/api/auth/**", "/api/users/**").permitAll()
             .pathMatchers(HttpMethod.GET, "/api/profiles/**").permitAll()
-            // Allow Swagger UI and API docs endpoints
-            .pathMatchers("/swagger-ui.html", "/swagger-ui/**", "/webjars/**").permitAll()
-            .pathMatchers("/**/api-docs", "/**/swagger-ui.html", "/**/swagger-ui/**", "/**/v3/api-docs/**").permitAll()
+
+          
+            .pathMatchers(
+                "/swagger-ui.html",
+                "/swagger-ui/**",
+                "/v3/api-docs/**",
+                "/webjars/**"
+            ).permitAll()
+
             .anyExchange().authenticated()
         )
         .addFilterAt(jwtWebFilter, SecurityWebFiltersOrder.AUTHENTICATION)

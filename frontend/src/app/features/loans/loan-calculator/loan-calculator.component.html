@@ -1,0 +1,91 @@
+<div class="calculator-container">
+  <mat-card class="calculator-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>calculate</mat-icon>
+        Loan Calculator
+      </mat-card-title>
+      <mat-card-subtitle>Estimate your EMI and loan details</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form [formGroup]="calculatorForm">
+        <!-- Loan Type Selection -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Loan Type</mat-label>
+          <mat-select formControlName="loanType">
+            <mat-option value="PERSONAL">Personal Loan (10.5%)</mat-option>
+            <mat-option value="HOME">Home Loan (6.5%)</mat-option>
+            <mat-option value="AUTO">Auto Loan (8.0%)</mat-option>
+            <mat-option value="EDUCATIONAL">Educational Loan (7.5%)</mat-option>
+            <mat-option value="HOME_LOAN">Home Loan (6.5%)</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- Loan Amount -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Loan Amount (₹)</mat-label>
+          <input matInput type="number" formControlName="amount" placeholder="500000">
+        </mat-form-field>
+
+        <!-- Tenure -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Tenure (Months)</mat-label>
+          <input matInput type="number" formControlName="tenure" placeholder="12" min="6" max="360">
+          <mat-hint>6 to 360 months</mat-hint>
+        </mat-form-field>
+
+        <!-- Interest Rate -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Interest Rate (%)</mat-label>
+          <input matInput type="number" formControlName="rate" step="0.01" placeholder="10.5">
+        </mat-form-field>
+      </form>
+
+      <!-- Results Section -->
+      <div class="results-section" *ngIf="emiResult">
+        <h3>Loan Details</h3>
+        
+        <div class="result-grid">
+          <div class="result-card primary">
+            <span class="result-label">Monthly EMI</span>
+            <span class="result-value">₹{{ emiResult.monthlyEMI }}</span>
+          </div>
+
+          <div class="result-card">
+            <span class="result-label">Principal Amount</span>
+            <span class="result-value">₹{{ emiResult.principalAmount }}</span>
+          </div>
+
+          <div class="result-card">
+            <span class="result-label">Total Interest</span>
+            <span class="result-value">₹{{ emiResult.totalInterest }}</span>
+          </div>
+
+          <div class="result-card">
+            <span class="result-label">Total Amount</span>
+            <span class="result-value">₹{{ emiResult.totalAmount }}</span>
+          </div>
+        </div>
+
+        <div class="breakdown-info">
+          <p>
+            <strong>Interest Rate:</strong> {{ emiResult.rate }}% per annum
+          </p>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="button-row">
+        <button mat-raised-button color="primary" (click)="calculate()">
+          <mat-icon>calculate</mat-icon>
+          Calculate
+        </button>
+        <button mat-button (click)="reset()">
+          <mat-icon>refresh</mat-icon>
+          Reset
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

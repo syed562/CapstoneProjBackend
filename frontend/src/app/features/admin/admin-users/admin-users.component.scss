@@ -1,73 +1,186 @@
+:root {
+  --primary: #3f51b5;
+  --success: #2e7d32;
+  --warn: #c62828;
+  --bg: #f6f7fb;
+  --card-bg: #ffffff;
+  --text-subtle: #6b7280;
+}
+
 .admin-users {
+  padding: 20px;
+  background: var(--bg);
+}
+
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 16px;
+  margin-bottom: 16px;
+
+  .title h2 {
+    margin: 0;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+  }
+  .subtitle {
+    margin: 4px 0 0;
+    color: var(--text-subtle);
+    font-size: 13px;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    margin-left: 8px;
+    background: #eef2ff;
+    color: var(--primary);
+    &.primary { background: #eef2ff; color: var(--primary); }
+    &.success { background: #e8f5e9; color: var(--success); }
+    &.warn { background: #ffebee; color: var(--warn); }
+  }
+}
+
+.card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
   padding: 16px;
+}
+
+.loading {
+  color: var(--text-subtle);
 }
 
 .users-table {
   width: 100%;
-  border-collapse: collapse;
-  margin-top: 12px;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
-.users-table th,
-.users-table td {
-  padding: 10px;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.users-table th {
+.users-table thead th {
   text-align: left;
-  background: #f5f5f5;
+  padding: 12px 14px;
+  background: #f3f4f6;
+  color: #374151;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
-select,
-button {
+.users-table tbody td {
+  padding: 14px;
+  border-top: 1px solid #eef2f7;
+}
+
+.users-table tbody tr {
+  transition: background 0.15s ease;
+}
+.users-table tbody tr:hover {
+  background: #fafbff;
+}
+
+.cell-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #e0e7ff;
+  color: var(--primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+.avatar::before {
+  content: attr(data-letter);
+}
+.cell-text .username { font-weight: 600; }
+.cell-text .email { color: var(--text-subtle); font-size: 12px; }
+
+.role-select select {
   padding: 6px 10px;
-}
-
-button.danger {
-  background: #fbe9e7;
-  color: #c62828;
-  border: 1px solid #f5c6c6;
-  margin-left: 6px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background: #fff;
 }
 
 .status {
-  padding: 4px 8px;
-  border-radius: 4px;
+  padding: 6px 10px;
+  border-radius: 999px;
   font-weight: 600;
+  font-size: 12px;
 }
-
 .status.active {
-  background: #e6f4ea;
-  color: #2e7d32;
+  background: #e8f5e9;
+  color: var(--success);
+}
+.status.inactive {
+  background: #ffebee;
+  color: var(--warn);
 }
 
-.status.inactive {
-  background: #fbe9e7;
-  color: #c62828;
+.actions-col {
+  white-space: nowrap;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  color: #111827;
+  cursor: pointer;
+  transition: transform 0.08s ease, box-shadow 0.2s ease;
+  margin-right: 8px;
+}
+.btn:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.08); }
+.btn:active { transform: translateY(1px); }
+
+.btn.outline { border-color: #cbd5e1; }
+.btn.danger {
+  border-color: #fca5a5;
+  color: var(--warn);
+  background: #fff5f5;
+}
+
+.hide-md {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .hide-md { display: table-cell; }
 }
 
 .alert {
   padding: 12px 16px;
-  border-radius: 4px;
+  border-radius: 10px;
   margin-bottom: 16px;
   display: flex;
   align-items: center;
   gap: 12px;
   font-size: 14px;
 
-  mat-icon {
-    flex-shrink: 0;
-  }
+  mat-icon { flex-shrink: 0; }
 }
-
 .alert-danger {
   background-color: #ffebee;
-  color: #c62828;
-  border-left: 4px solid #c62828;
+  color: var(--warn);
+  border-left: 4px solid var(--warn);
 }
-
 .alert-success {
   background-color: #e8f5e9;
-  color: #2e7d32;
-  border-left: 4px solid #2e7d32;
+  color: var(--success);
+  border-left: 4px solid var(--success);
+}

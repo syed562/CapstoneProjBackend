@@ -8,7 +8,7 @@
     No applications found.
   </div>
 
-  <table *ngIf="!loading && !error && applications.length > 0" class="app-table">
+  <table *ngIf="!loading && !error && pagedApplications.length > 0" class="app-table">
     <thead>
       <tr>
         <th *ngIf="isAdminOrOfficer()">User ID</th>
@@ -20,7 +20,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let app of applications">
+      <tr *ngFor="let app of pagedApplications">
         <td *ngIf="isAdminOrOfficer()">{{ app.userId }}</td>
         <td>{{ app.loanType }}</td>
         <td>{{ app.amount | number:'1.0-0' }}</td>
@@ -51,5 +51,11 @@
           <span *ngIf="app.status === 'APPROVED' || app.status === 'REJECTED'">—</span>
         </td>
 		</tbody>
-	</table>
+  </table>
+
+  <div *ngIf="!loading && !error && totalPages > 1" class="pagination-controls" style="margin-top: 1rem; text-align: center;">
+    <button (click)="prevPage()" [disabled]="currentPage === 1">Previous</button>
+    <span style="margin: 0 1rem;">{{currentPage}} of {{totalPages}}</span>
+    <button (click)="nextPage()" [disabled]="currentPage === totalPages">Next</button>
+  </div>
 </div>

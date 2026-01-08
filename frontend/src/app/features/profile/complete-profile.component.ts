@@ -35,6 +35,7 @@ export class CompleteProfileComponent implements OnInit {
   error = '';
   success = '';
   submitted = false;
+  currentUser: any = null;
 
   constructor(
     private fb: FormBuilder,
@@ -44,6 +45,8 @@ export class CompleteProfileComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.currentUser = this.authService.currentUserValue;
+
     // Personal Information Form
     this.personalInfoForm = this.fb.group({
       firstName: ['', Validators.required],
@@ -69,10 +72,26 @@ export class CompleteProfileComponent implements OnInit {
       totalLiabilities: ['', [Validators.min(0)]]
     });
 
-    // Pre-fill email from user account
-    const currentUser = this.authService.currentUserValue;
-    if (currentUser?.email) {
-      this.personalInfoForm.patchValue({ email: currentUser.email });
+    // Lock down email and username (email as form control, username displayed only)
+    if (this.currentUser?.email) {
+      this.personalInfoForm.patchValue({ email: this.currentUser.email });
+      this.personalInfoForm.get('email')?.disable();
+    }
+
+    // Prefill profile data if it exists
+    if (this.currentUser?.userId) {
+      this.profileService.getProfile(this.currentUser.userId).subscribe({
+        next: (profile) => {
+          this.patchProfile(profile);
+          if (profile?.email) {
+            this.personalInfoForm.patchValue({ email: profile.email });
+            this.personalInfoForm.get('email')?.disable();
+          }
+        },
+        error: () => {
+          // if profile missing, stay in empty state
+        }
+      });
     }
   }
 
@@ -86,9 +105,7 @@ export class CompleteProfileComponent implements OnInit {
     }
 
     this.loading = true;
-    const currentUser = this.authService.currentUserValue;
-    
-    if (!currentUser?.userId) {
+    if (!this.currentUser?.userId) {
       this.error = 'Please login first';
       this.loading = false;
       this.router.navigate(['/login']);
@@ -96,17 +113,18 @@ export class CompleteProfileComponent implements OnInit {
     }
 
     const profile = {
-      userId: currentUser.userId,
-      ...this.personalInfoForm.value,
+      userId: this.currentUser.userId,
+      username: this.currentUser.username,
+      ...this.personalInfoForm.getRawValue(),
       ...this.addressForm.value,
       ...this.financialForm.value,
       kycStatus: 'PENDING'
     };
 
-    this.profileService.createProfile(profile, currentUser.userId).subscribe({
+    this.profileService.createProfile(profile, this.currentUser.userId).subscribe({
       next: (response) => {
         // Update user object with profile completed flag
-        const updatedUser = { ...currentUser, profileCompleted: true };
+        const updatedUser = { ...this.currentUser, profileCompleted: true };
         localStorage.setItem('user', JSON.stringify(updatedUser));
         
         this.success = 'Profile completed successfully!';
@@ -127,5 +145,31 @@ export class CompleteProfileComponent implements OnInit {
     if (confirm('You can complete your profile later, but some features may be limited. Continue?')) {
       this.router.navigate(['/dashboard']);
     }
+  }
+
+  private patchProfile(profile: any) {
+    if (!profile) return;
+
+    this.personalInfoForm.patchValue({
+      firstName: profile.firstName || '',
+      lastName: profile.lastName || '',
+      email: this.currentUser?.email || profile.email || '',
+      phone: profile.phone || ''
+    });
+
+    this.addressForm.patchValue({
+      addressLine1: profile.addressLine1 || '',
+      addressLine2: profile.addressLine2 || '',
+      city: profile.city || '',
+      state: profile.state || '',
+      postalCode: profile.postalCode || '',
+      country: profile.country || 'India'
+    });
+
+    this.financialForm.patchValue({
+      annualIncome: profile.annualIncome ?? '',
+      creditScore: profile.creditScore ?? '',
+      totalLiabilities: profile.totalLiabilities ?? ''
+    });
   }
 }

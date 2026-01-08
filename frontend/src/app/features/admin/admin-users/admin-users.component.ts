@@ -33,6 +33,22 @@ export class AdminUsersComponent implements OnInit {
     this.loadUsers();
   }
 
+  get activeCount(): number {
+    return (this.users || []).filter(u => u.status === 'ACTIVE').length;
+  }
+
+  get inactiveCount(): number {
+    return (this.users || []).filter(u => u.status !== 'ACTIVE').length;
+  }
+
+  statusIcon(user: AdminUserView): string {
+    return user.status === 'ACTIVE' ? 'pause_circle' : 'play_circle';
+  }
+
+  statusActionLabel(user: AdminUserView): string {
+    return user.status === 'ACTIVE' ? 'Deactivate' : 'Activate';
+  }
+
   loadUsers(): void {
     this.loading = true;
     this.error = '';

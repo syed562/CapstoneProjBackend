@@ -28,9 +28,14 @@ interface ApplicationView {
 })
 export class LoanApplicationsComponent implements OnInit {
   applications: ApplicationView[] = [];
+  pagedApplications: ApplicationView[] = [];
   loading = false;
   error: string | null = null;
   currentUserRole: string = '';
+  // Pagination
+  currentPage = 1;
+  itemsPerPage = 5;
+  totalPages = 1;
 
   constructor(
     private loanService: LoanService,
@@ -123,6 +128,8 @@ export class LoanApplicationsComponent implements OnInit {
             createdAt: a.createdAt,
             actionInProgress: false
           }));
+          this.totalPages = Math.ceil(this.applications.length / this.itemsPerPage) || 1;
+          this.setPage(1);
           this.loading = false;
         }
       },
@@ -132,6 +139,26 @@ export class LoanApplicationsComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  setPage(page: number) {
+    if (page < 1 || page > this.totalPages) return;
+    this.currentPage = page;
+    const start = (page - 1) * this.itemsPerPage;
+    const end = start + this.itemsPerPage;
+    this.pagedApplications = this.applications.slice(start, end);
+  }
+
+  nextPage() {
+    if (this.currentPage < this.totalPages) {
+      this.setPage(this.currentPage + 1);
+    }
+  }
+
+  prevPage() {
+    if (this.currentPage > 1) {
+      this.setPage(this.currentPage - 1);
+    }
   }
 
   isAdminOrOfficer(): boolean {

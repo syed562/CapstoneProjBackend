@@ -102,7 +102,7 @@ public class LoanApplicationService {
         app.setUpdatedAt(now);
         LoanApplication savedApp = repo.save(app);
         
-        // Publish loan application created event
+        
         try {
             LoanApplicationEvent event = new LoanApplicationEvent();
             event.setApplicationId(savedApp.getId());
@@ -110,7 +110,7 @@ public class LoanApplicationService {
             event.setLoanAmount(amount);
             notificationPublisher.publishApplicationCreated(event);
         } catch (Exception e) {
-            // Log but don't fail application creation if notification fails
+            
             System.err.println("Failed to publish loan application event: " + e.getMessage());
         }
         
@@ -142,12 +142,12 @@ public class LoanApplicationService {
 
     public LoanApplication approve(String id) {
         LoanApplication app = get(id);
-        // Allow approving SUBMITTED or UNDER_REVIEW applications
+        
         if (!"SUBMITTED".equals(app.getStatus()) && !"UNDER_REVIEW".equals(app.getStatus())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Application must be in SUBMITTED or UNDER_REVIEW status to approve");
         }
         
-        // Validate approval criteria (credit score, income, liabilities)
+        // Validate approval criteria before approving
         double decryptedAmount = Double.parseDouble(app.getAmount());
         ApprovalCriteriaService.ApprovalDecision decision = approvalCriteriaService.validateApprovalCriteria(
             app.getUserId(), 
@@ -220,12 +220,32 @@ public class LoanApplicationService {
         if (remarks == null || remarks.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Rejection remarks are required");
         }
+        
+        // Optional: Run validation checks and auto-populate rejection reason if criteria not met
+        ApprovalCriteriaService.ApprovalDecision decision = null;
+        try {
+            double decryptedAmount = Double.parseDouble(app.getAmount());
+            decision = approvalCriteriaService.validateApprovalCriteria(
+                app.getUserId(),
+                decryptedAmount
+            );
+        } catch (Exception ignored) {
+            // If validation fails or service unavailable, proceed with provided remarks
+        }
+
+        // If user provides generic remarks, enhance with specific criteria failure
+        if (remarks.equalsIgnoreCase("rejected") || remarks.equalsIgnoreCase("not eligible")) {
+            if (decision != null && !decision.isApproved()) {
+                remarks = decision.getReason();
+            }
+        }
+        
         app.setStatus("REJECTED");
         app.setRemarks(remarks);
         app.setUpdatedAt(Instant.now().toString());
         LoanApplication saved = repo.save(app);
         
-        // Publish rejection event
+        
         try {
             LoanApplicationEvent event = new LoanApplicationEvent();
             event.setApplicationId(saved.getId());

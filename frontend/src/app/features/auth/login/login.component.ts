@@ -94,7 +94,21 @@ export class LoginComponent implements OnInit {
         }
       },
       error: (err) => {
-        this.error = err?.error?.message || 'Login failed';
+        const errorMessage = err?.error?.message || err?.message || 'Login failed';
+        
+        // Check for specific error messages related to inactive/deactivated users
+        if (errorMessage.toLowerCase().includes('inactive') || 
+            errorMessage.toLowerCase().includes('deactivated') ||
+            errorMessage.toLowerCase().includes('disabled')) {
+          this.error = 'Your account has been deactivated. Please contact the administrator for assistance.';
+        } else if (errorMessage.toLowerCase().includes('invalid credentials') || 
+                   errorMessage.toLowerCase().includes('bad credentials') ||
+                   errorMessage.toLowerCase().includes('unauthorized')) {
+          this.error = 'Invalid username or password. Please try again.';
+        } else {
+          this.error = errorMessage;
+        }
+        
         this.loading = false;
       }
     });

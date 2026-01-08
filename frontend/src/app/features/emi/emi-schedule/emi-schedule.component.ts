@@ -10,6 +10,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { MatSelectModule } from '@angular/material/select';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { PaymentDialogComponent } from '../payment-dialog/payment-dialog.component';
 
 interface EMIRow {
@@ -36,7 +38,9 @@ interface EMIRow {
     MatIconModule,
     MatProgressSpinnerModule,
     MatChipsModule,
-    MatDialogModule
+    MatDialogModule,
+    MatSelectModule,
+    MatFormFieldModule
   ],
   templateUrl: './emi-schedule.component.html',
   styleUrl: './emi-schedule.component.scss'
@@ -46,7 +50,12 @@ export class EmiScheduleComponent implements OnInit {
   loading = false;
   error: string | null = null;
   currentLoanId: string = '';
+  activeLoans: any[] = [];
   displayedColumns: string[] = ['emiNumber', 'dueDate', 'amount', 'principal', 'interest', 'remainingBalance', 'status', 'actions'];
+
+  get paidCount(): number {
+    return this.schedule.filter(x => x.status?.toLowerCase() === 'paid').length;
+  }
 
   constructor(
     private loanService: LoanService,
@@ -71,10 +80,11 @@ export class EmiScheduleComponent implements OnInit {
     this.loanService.getUserLoans(userId).subscribe({
       next: (loans) => {
         if (loans && loans.length > 0) {
-          // Get EMI schedule for the first active loan
-          const activeLoan = loans.find((l: any) => l.status === 'ACTIVE' || l.status === 'APPROVED');
-          if (activeLoan) {
-            this.fetchEMISchedule(activeLoan.id);
+          // Get all active loans
+          this.activeLoans = loans.filter((l: any) => l.status === 'ACTIVE' || l.status === 'APPROVED');
+          if (this.activeLoans.length > 0) {
+            // Load schedule for the first active loan by default
+            this.fetchEMISchedule(this.activeLoans[0].id);
           } else {
             this.error = 'No active loans found';
             this.loading = false;
@@ -160,5 +170,9 @@ export class EmiScheduleComponent implements OnInit {
 
   getTotalAmount(): number {
     return this.schedule.reduce((sum, x) => sum + x.amount, 0);
+  }
+
+  onLoanChange(loanId: string): void {
+    this.fetchEMISchedule(loanId);
   }
 }

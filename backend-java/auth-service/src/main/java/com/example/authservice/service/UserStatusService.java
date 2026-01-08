@@ -14,10 +14,7 @@ public class UserStatusService {
         this.userRepository = userRepository;
     }
     
-    /**
-     * Deactivate a user account
-     * @param userId the user ID to deactivate
-     */
+    
     public void deactivateUser(String userId) {
         Optional<User> user = userRepository.findById(userId);
         if (user.isPresent()) {
@@ -26,10 +23,7 @@ public class UserStatusService {
         }
     }
     
-    /**
-     * Activate a previously deactivated user account
-     * @param userId the user ID to activate
-     */
+   
     public void activateUser(String userId) {
         Optional<User> user = userRepository.findById(userId);
         if (user.isPresent()) {
@@ -38,10 +32,6 @@ public class UserStatusService {
         }
     }
     
-    /**
-     * Suspend a user account (for violations, security issues, etc.)
-     * @param userId the user ID to suspend
-     */
     public void suspendUser(String userId) {
         Optional<User> user = userRepository.findById(userId);
         if (user.isPresent()) {
@@ -50,22 +40,14 @@ public class UserStatusService {
         }
     }
     
-    /**
-     * Check if a user is active
-     * @param userId the user ID to check
-     * @return true if user is active, false otherwise
-     */
+   
     public boolean isUserActive(String userId) {
         return userRepository.findById(userId)
             .map(User::isActive)
             .orElse(false);
     }
     
-    /**
-     * Get the status of a user
-     * @param userId the user ID
-     * @return the user status string
-     */
+    
     public String getUserStatus(String userId) {
         return userRepository.findById(userId)
             .map(User::getStatus)

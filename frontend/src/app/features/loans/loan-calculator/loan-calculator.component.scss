@@ -1,0 +1,138 @@
+.calculator-container {
+  max-width: 600px;
+  margin: 24px auto;
+  padding: 16px;
+}
+
+.calculator-card {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.calculator-card mat-card-header {
+  margin-bottom: 16px;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 16px;
+}
+
+.calculator-card mat-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1a202c;
+}
+
+.calculator-card mat-icon {
+  color: #5561ff;
+}
+
+.full-width {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.results-section {
+  background: linear-gradient(135deg, rgba(85, 97, 255, 0.08), rgba(52, 211, 153, 0.08));
+  border: 1px solid rgba(85, 97, 255, 0.2);
+  border-radius: 12px;
+  padding: 20px;
+  margin: 24px 0;
+}
+
+.results-section h3 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a202c;
+}
+
+.result-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.result-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.result-card:hover {
+  border-color: #5561ff;
+  box-shadow: 0 4px 12px rgba(85, 97, 255, 0.15);
+}
+
+.result-card.primary {
+  background: linear-gradient(135deg, #5561ff, #3d46c9);
+  border: none;
+  color: white;
+}
+
+.result-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.75;
+  margin-bottom: 6px;
+  color: #6b7280;
+}
+
+.result-card.primary .result-label {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.result-value {
+  display: block;
+  font-size: 18px;
+  font-weight: 800;
+  color: #1a202c;
+}
+
+.result-card.primary .result-value {
+  color: #ffffff;
+}
+
+.breakdown-info {
+  background: white;
+  border-left: 3px solid #5561ff;
+  padding: 12px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.breakdown-info p {
+  margin: 0;
+  color: #4b5563;
+}
+
+.button-row {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.button-row button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+@media (max-width: 600px) {
+  .calculator-container {
+    margin: 12px;
+    padding: 8px;
+  }
+
+  .result-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -16,23 +16,17 @@ public class RateConfigService {
         this.currentRates = new HashMap<>(this.defaultRates); // Copy to current for modification
     }
 
-    /**
-     * Get all available loan types and their current rates
-     */
+    
     public Map<String, Double> getAllRates() {
         return new HashMap<>(currentRates);
     }
 
-    /**
-     * Get rate for a specific loan type
-     */
+   
     public Double getRate(String loanType) {
         return currentRates.getOrDefault(loanType.toUpperCase(), defaultRates.getOrDefault(loanType.toUpperCase(), 12.0));
     }
 
-    /**
-     * Update rate for a loan type
-     */
+    
     public void updateRate(String loanType, Double rate) {
         if (rate == null || rate <= 0) {
             throw new IllegalArgumentException("Rate must be a positive number");
@@ -40,17 +34,13 @@ public class RateConfigService {
         currentRates.put(loanType.toUpperCase(), rate);
     }
 
-    /**
-     * Reset all rates to defaults
-     */
+   
     public void resetToDefaults() {
         currentRates.clear();
         currentRates.putAll(defaultRates);
     }
 
-    /**
-     * Parse rate configuration string format: PERSONAL=12,HOME=8.5,AUTO=10
-     */
+   
     private Map<String, Double> parseRateMap(String rateString) {
         Map<String, Double> rates = new HashMap<>();
         if (rateString == null || rateString.isEmpty()) {

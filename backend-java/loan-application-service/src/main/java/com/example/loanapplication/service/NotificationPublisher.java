@@ -2,24 +2,26 @@ package com.example.loanapplication.service;
 
 import com.example.loanapplication.config.RabbitMQProducerConfig;
 import com.example.loanapplication.event.LoanApplicationEvent;
+import com.example.loanapplication.client.ProfileServiceClient;
+import com.example.loanapplication.client.dto.ProfileView;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * Publishes loan application events to notification service via RabbitMQ
- * Uses mock email/name for testing - will integrate with profile-service later
+ * Fetches user email and name from profile-service
  */
 @Component
 @Slf4j
 public class NotificationPublisher {
     
     private final RabbitTemplate rabbitTemplate;
-    private static final String MOCK_USER_EMAIL = "syedsabiha982@gmail.com";
-    private static final String MOCK_USER_NAME = "Test Customer";
+    private final ProfileServiceClient profileServiceClient;
     
-    public NotificationPublisher(RabbitTemplate rabbitTemplate) {
+    public NotificationPublisher(RabbitTemplate rabbitTemplate, ProfileServiceClient profileServiceClient) {
         this.rabbitTemplate = rabbitTemplate;
+        this.profileServiceClient = profileServiceClient;
     }
     
     /**
@@ -103,15 +105,43 @@ public class NotificationPublisher {
     }
     
     /**
-     * Enrich event with mock user data for testing
-     * TODO: Replace with actual profile-service call to fetch customer email/name
+     * Enrich event with actual user data from profile service
      */
+    private static final String DEFAULT_EMAIL = "syedsabiha982@gmail.com";
     private void enrichEventWithMockData(LoanApplicationEvent event) {
-        if (event.getUserEmail() == null || event.getUserEmail().isEmpty()) {
-            event.setUserEmail(MOCK_USER_EMAIL);
+        log.info("[NOTIFY] Enriching event for userId: {} (current email: {})", event.getUserId(), event.getUserEmail());
+        if (event.getUserId() != null) {
+            try {
+                ProfileView profile = profileServiceClient.getProfile(event.getUserId());
+                log.info("[NOTIFY] Profile fetched for userId {}: {}", event.getUserId(), profile);
+                if (profile != null && profile.getEmail() != null && !profile.getEmail().isEmpty()) {
+                    event.setUserEmail(profile.getEmail());
+                    log.info("[NOTIFY] Set event email to profile email: {}", profile.getEmail());
+                } else {
+                    event.setUserEmail(DEFAULT_EMAIL);
+                    log.warn("[NOTIFY] Profile email missing, set to default: {}", DEFAULT_EMAIL);
+                }
+                if (event.getUserName() == null || event.getUserName().isEmpty()) {
+                    String fullName = "";
+                    if (profile != null && profile.getFirstName() != null) {
+                        fullName = profile.getFirstName();
+                    }
+                    if (profile != null && profile.getLastName() != null) {
+                        fullName = fullName.isEmpty() ? profile.getLastName() : fullName + " " + profile.getLastName();
+                    }
+                    if (!fullName.isEmpty()) {
+                        event.setUserName(fullName);
+                        log.info("[NOTIFY] Set event userName to: {}", fullName);
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("[NOTIFY] Failed to fetch profile for userId {}: {}", event.getUserId(), e.getMessage());
+                event.setUserEmail(DEFAULT_EMAIL);
+            }
+        } else if (event.getUserEmail() == null || event.getUserEmail().isEmpty()) {
+            event.setUserEmail(DEFAULT_EMAIL);
+            log.warn("[NOTIFY] userId missing, set event email to default: {}", DEFAULT_EMAIL);
         }
-        if (event.getUserName() == null || event.getUserName().isEmpty()) {
-            event.setUserName(MOCK_USER_NAME);
-        }
+        log.info("[NOTIFY] Final event email: {}", event.getUserEmail());
     }
 }
